@@ -37,7 +37,8 @@ return 1 point, neighboor
           hasNew = False
           for each neighboor: if abs(neighboor.colorIndex - self.colorIndex) == 1: allPaths.append([neighboor], hasNew = True
           if hasNew: continue, else: break
-        
+
+```
 def get_circulary_neighboors(currentCircle):
     resp = []
     for n in currentCircle[-1].neighboors:
@@ -45,3 +46,4 @@ def get_circulary_neighboors(currentCircle):
               nextCircles = currentCircle + get_circulary_neighboors(currentCircle + [n])
               resp += nextCircles
     return resp
+```
