@@ -35,10 +35,13 @@ return 1 point, neighboor
       - same color: self.color == self.color
       - circle: allPaths = [[self]]
           hasNew = False
-          for 
           for each neighboor: if abs(neighboor.colorIndex - self.colorIndex) == 1: allPaths.append([neighboor], hasNew = True
           if hasNew: continue, else: break
         
-def get_circulary_neighboors(node, prevNodes):
+def get_circulary_neighboors(currentCircle):
     resp = []
-    for n in neighboors: if isColorWheelNeighbor(node): resp.append[prevNodes + [node] + get_circulary_neighboors(node, prevNodes + [node, n]])
+    for n in currentCircle[-1].neighboors:
+         if isColorWheelNeighbor(currentCircle[-1]):
+              nextCircles = currentCircle + get_circulary_neighboors(currentCircle + [n])
+              resp += nextCircles
+    return resp
