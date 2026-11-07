@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:color_wheel_game/logic/ai.dart';
 import 'package:color_wheel_game/logic/deck.dart';
+import 'package:color_wheel_game/logic/difficulty.dart';
 import 'package:color_wheel_game/logic/game_state.dart';
 import 'package:color_wheel_game/model/levels.dart';
 import 'package:color_wheel_game/theme/palette.dart';
@@ -93,5 +94,37 @@ void main() {
       if (state.winner == 0) skilledWins++;
     }
     expect(skilledWins, greaterThan(games * 0.6));
+  });
+
+  test('difficulty orders the computer strength on every level', () {
+    for (final level in levels) {
+      final easy = Difficulty.easy.skillFor(level);
+      final medium = Difficulty.medium.skillFor(level);
+      final hard = Difficulty.hard.skillFor(level);
+      expect(easy, lessThan(medium), reason: level.name);
+      expect(medium, lessThan(hard), reason: level.name);
+      expect(hard, lessThanOrEqualTo(1));
+    }
+  });
+
+  test('hard beats easy most of the time', () {
+    final level = levels[1];
+    var hardWins = 0;
+    const games = 30;
+    for (var g = 0; g < games; g++) {
+      final rng = Random(500 + g);
+      final state = GameState(level, GameMode.twoPlayers, rng: rng);
+      // Alternate who starts so the opening move does not decide.
+      final hardPlayer = g.isEven ? 0 : 1;
+      while (!state.isOver) {
+        final d = state.current == hardPlayer
+            ? Difficulty.hard
+            : Difficulty.easy;
+        final move = chooseAiMove(state, d.skillFor(level), rng);
+        state.play(move.handIndex, move.node);
+      }
+      if (state.winner == hardPlayer) hardWins++;
+    }
+    expect(hardWins, greaterThan(games * 0.6));
   });
 }

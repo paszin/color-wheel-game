@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../logic/difficulty.dart';
 import '../logic/game_state.dart';
 import '../logic/progress.dart';
 import '../model/board.dart';
@@ -23,6 +24,7 @@ class LevelSelectScreen extends StatefulWidget {
 
 class _LevelSelectScreenState extends State<LevelSelectScreen> {
   int _unlocked = 1;
+  Difficulty _difficulty = Difficulty.medium;
 
   @override
   void initState() {
@@ -32,7 +34,13 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
 
   Future<void> _refresh() async {
     final u = await Progress.unlocked();
-    if (mounted) setState(() => _unlocked = u);
+    final d = await Progress.difficulty();
+    if (mounted) {
+      setState(() {
+        _unlocked = u;
+        _difficulty = d;
+      });
+    }
   }
 
   bool _isOpen(Level l) =>
@@ -41,7 +49,11 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   Future<void> _start(Level level) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => GameScreen(level: level, mode: widget.mode),
+        builder: (_) => GameScreen(
+          level: level,
+          mode: widget.mode,
+          difficulty: _difficulty,
+        ),
       ),
     );
     _refresh();
@@ -74,6 +86,17 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
               ],
             ),
           ),
+          if (widget.mode == GameMode.vsComputer)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: DifficultyPicker(
+                value: _difficulty,
+                onChanged: (d) {
+                  setState(() => _difficulty = d);
+                  Progress.setDifficulty(d);
+                },
+              ),
+            ),
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -256,4 +279,67 @@ class _BoardPreviewPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BoardPreviewPainter old) => old.level != level;
+}
+
+/// Leicht / Mittel / Schwer as three labels; the chosen one sits on a brush
+/// stroke in its colour.
+class DifficultyPicker extends StatelessWidget {
+  const DifficultyPicker({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final Difficulty value;
+  final ValueChanged<Difficulty> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text('Computer:', style: AppText.hand(20, color: Inks.graphite)),
+        const SizedBox(width: 6),
+        for (final d in Difficulty.values)
+          Expanded(
+            child: Semantics(
+              button: true,
+              selected: d == value,
+              label: 'Schwierigkeit ${d.label}',
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onChanged(d),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: CustomPaint(
+                      key: ValueKey(d == value),
+                      painter: BrushStrokePainter(
+                        d.color.pigment,
+                        40 + d.index,
+                        opacity: d == value ? 0.85 : 0,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(
+                          d.label,
+                          textAlign: TextAlign.center,
+                          style: AppText.hand(
+                            22,
+                            color: d == value ? Inks.ink : Inks.graphite,
+                            weight: d == value
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }

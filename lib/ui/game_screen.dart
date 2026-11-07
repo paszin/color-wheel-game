@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../game/color_wheel_game.dart';
 import '../logic/ai.dart';
+import '../logic/difficulty.dart';
 import '../logic/game_state.dart';
 import '../logic/progress.dart';
 import '../model/board.dart';
@@ -17,10 +18,16 @@ import 'rules_sheet.dart';
 import 'widgets.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.level, required this.mode});
+  const GameScreen({
+    super.key,
+    required this.level,
+    required this.mode,
+    this.difficulty = Difficulty.medium,
+  });
 
   final Level level;
   final GameMode mode;
+  final Difficulty difficulty;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -100,7 +107,11 @@ class _GameScreenState extends State<GameScreen> {
 
   void _computerTurn() {
     if (!mounted || _state.isOver) return;
-    final move = chooseAiMove(_state, widget.level.aiSkill, _rng);
+    final move = chooseAiMove(
+      _state,
+      widget.difficulty.skillFor(widget.level),
+      _rng,
+    );
     _play(move.handIndex, move.node);
   }
 
@@ -117,8 +128,11 @@ class _GameScreenState extends State<GameScreen> {
   void _nextLevel() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder: (_) =>
-            GameScreen(level: levels[widget.level.number], mode: widget.mode),
+        builder: (_) => GameScreen(
+          level: levels[widget.level.number],
+          mode: widget.mode,
+          difficulty: widget.difficulty,
+        ),
       ),
     );
   }
@@ -142,6 +156,9 @@ class _GameScreenState extends State<GameScreen> {
             children: [
               _TopBar(
                 level: widget.level,
+                subtitle: widget.mode == GameMode.vsComputer
+                    ? 'Level ${widget.level.number} · ${widget.difficulty.label}'
+                    : 'Level ${widget.level.number}',
                 onBack: () => Navigator.of(context).pop(),
                 onRules: () => showRules(context),
               ),
@@ -207,11 +224,13 @@ class _GameScreenState extends State<GameScreen> {
 class _TopBar extends StatelessWidget {
   const _TopBar({
     required this.level,
+    required this.subtitle,
     required this.onBack,
     required this.onRules,
   });
 
   final Level level;
+  final String subtitle;
   final VoidCallback onBack;
   final VoidCallback onRules;
 
@@ -229,10 +248,7 @@ class _TopBar extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                Text(
-                  'Level ${level.number}',
-                  style: AppText.hand(18, color: Inks.graphite),
-                ),
+                Text(subtitle, style: AppText.hand(18, color: Inks.graphite)),
                 Text(level.name, style: AppText.title(26)),
               ],
             ),
@@ -560,7 +576,14 @@ class _ResultOverlay extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 28),
                       child: Center(
-                        child: Text(_headline, style: AppText.title(38)),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            _headline,
+                            maxLines: 1,
+                            style: AppText.title(38),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -579,7 +602,7 @@ class _ResultOverlay extends StatelessWidget {
                         const SizedBox(),
                         for (var i = 0; i < 2; i++)
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
+                            padding: const EdgeInsets.only(bottom: 6, left: 12),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
