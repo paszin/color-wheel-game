@@ -18,7 +18,7 @@ Rules:
 Implementation:
 
 - layout like smartphone
-- new programming language, dart + flame, or kotlin?
+- new programming language, dart + flame
 - graph structure.
 
 
@@ -47,3 +47,22 @@ def get_circulary_neighboors(currentCircle):
               resp += nextCircles
     return resp
 ```
+
+## Umsetzung (Stand)
+
+Flutter + Flame, Web zuerst (`flutter run -d chrome`), gleicher Code für iOS/Android/macOS.
+
+```
+flutter test                    # Spiellogik, Wertung, KI
+flutter build web --release     # Ergebnis in build/web
+```
+
+Regeln, wie umgesetzt:
+- Gleiche Farbe benachbart: 1 Punkt je Nachbar, Komplementärfarbe benachbart: 2 Punkte je Nachbar.
+- Farbfolge: längste Kette verbundener Karten durch die neue Karte, die dem Farbkreis Schritt für Schritt folgt (beide Richtungen, Grün → Gelb läuft um), ab 3 Karten, Punkte = Länge. Enthält sie alle 6 Farben: +3.
+- Gelegte Karte gehört dem Spieler, bei einer Wertung übernimmt er alle beteiligten Karten.
+- Spielende, wenn das Brett voll ist: Punkte + eigene Felder.
+- Hand: 3 Karten, Nachziehen mit Gewicht 1 / (1 + 3 · Anzahl der Farbe in der Hand).
+
+Code: `lib/logic/scoring.dart` (Wertung), `lib/model/levels.dart` (8 Bretter),
+`lib/painting/watercolor.dart` (Aquarell-Rendering), `lib/game/` (Flame-Brett), `lib/ui/` (Screens).
