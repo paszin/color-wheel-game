@@ -223,7 +223,15 @@ class NodeComponent extends PositionComponent
 
     final owner = node.owner;
     if (owner != null) {
-      Watercolor.ownerRing(canvas, c, r * 1.1, owner, seed);
+      // Unsecured cards can still be taken: a pale ring until secured.
+      Watercolor.ownerRing(
+        canvas,
+        c,
+        r * 1.1,
+        owner,
+        seed,
+        opacity: node.secured ? 1 : 0.4,
+      );
       if (_pulse > 0 && _pulseDelay <= 0) {
         final t = 1 - _pulse;
         Watercolor.ownerRing(

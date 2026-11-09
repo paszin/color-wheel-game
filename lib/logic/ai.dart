@@ -33,7 +33,10 @@ AiMove chooseAiMove(GameState state, double skill, Random rng) {
       final result = evaluateMove(node, hand[i]);
       var value = result.points + _ownershipGain(result, me, opp);
       if (skill >= 0.5) {
-        value -= _threat(node, hand[i], me, opp, oppHand) * skill * 0.7;
+        value -=
+            _threat(node, hand[i], result.secures, me, opp, oppHand) *
+            skill *
+            0.7;
       }
       value += rng.nextDouble() * (1 - skill) * 4;
       if (value > bestValue) {
@@ -52,6 +55,8 @@ double _ownershipGain(MoveResult r, int me, int opp) {
       gain += 1;
     } else if (n.owner == opp) {
       gain += 2;
+    } else if (n.owner == me) {
+      gain += 0.5; // securing an own card protects it
     }
   }
   return gain;
@@ -62,12 +67,14 @@ double _ownershipGain(MoveResult r, int me, int opp) {
 double _threat(
   ColorNode node,
   WheelColor color,
+  bool secured,
   int me,
   int opp,
   Set<WheelColor> oppHand,
 ) {
   node.color = color;
   node.owner = me;
+  node.secured = secured;
   var worst = 0.0;
   try {
     for (final m in node.neighbors) {
@@ -82,6 +89,7 @@ double _threat(
   } finally {
     node.color = null;
     node.owner = null;
+    node.secured = false;
   }
   return worst;
 }

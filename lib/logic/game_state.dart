@@ -64,7 +64,8 @@ class GameState extends ChangeNotifier {
   }
 
   /// Places card [handIndex] of the current player on [node], scores it,
-  /// claims all involved fields, refills the hand and passes the turn.
+  /// claims and secures every involved field nobody has secured yet,
+  /// refills the hand and passes the turn.
   MoveResult play(int handIndex, ColorNode node) {
     if (isOver) throw StateError('Game is over');
     if (!node.isEmpty) throw ArgumentError('Field ${node.id} is taken');
@@ -75,6 +76,7 @@ class GameState extends ChangeNotifier {
     node.color = color;
     for (final n in result.claimed) {
       n.owner = current;
+      if (result.secures) n.secured = true;
     }
     player.points += result.points;
     final rest = [...player.hand]..removeAt(handIndex);

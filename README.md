@@ -27,7 +27,7 @@ Der Farbkreis hat sechs Farben: **Gelb → Orange → Rot → Violett → Blau �
 
 Gewertet wird die längste Farbfolge durch die neue Karte.
 
-**Felder erobern:** Jede gelegte Karte gehört dem Spieler, der sie gelegt hat. Wer punktet, übernimmt zusätzlich alle beteiligten Karten, auch die des Gegners. Ein Ring um die Karte zeigt, wem ein Feld gehört: einfach für Spieler 1, doppelt für Spieler 2.
+**Felder erobern:** Jede gelegte Karte gehört zunächst vorläufig dem Spieler, der sie gelegt hat (blasser Ring). Wer als Erstes mit einer Karte punktet, sichert sie sich (kräftiger Ring), auch wenn sie vorher dem Gegner gehörte. Gesicherte Felder wechseln nicht mehr den Besitzer. Die Punkte gibt es trotzdem voll: Macht Spieler 1 mit Gelb–Orange–Rot 3 Punkte und Spieler 2 legt Violett an, bekommt Spieler 2 alle 4 Punkte der Farbfolge, aber nur das neue Feld, nicht die drei schon gesicherten. Ein einfacher Ring steht für Spieler 1, ein doppelter für Spieler 2.
 
 **Spielende:** Sind alle Felder bemalt, zählt **Punkte + eigene Felder**. Wer mehr hat, gewinnt.
 

@@ -61,6 +61,30 @@ void main() {
     expect(state.total(1), 4);
   });
 
+  test('secured fields keep their owner, points still count in full', () {
+    // Level 1 is a 3 × 3 grid: 0–1–2 is the top row, 5 sits below 2.
+    final state = GameState(levels.first, GameMode.twoPlayers, rng: Random(3));
+    final n = state.board.nodes;
+    void put(WheelColor colour, int field) {
+      state.players[state.current].hand[0] = colour;
+      state.play(0, n[field]);
+    }
+
+    put(WheelColor.yellow, 0); // player 1
+    expect(n[0].secured, isFalse, reason: 'no points, not secured yet');
+    put(WheelColor.orange, 1); // player 2
+    put(WheelColor.red, 2); // player 1: yellow–orange–red
+    expect(state.lastMove!.points, 3);
+    expect([n[0], n[1], n[2]].every((f) => f.owner == 0 && f.secured), isTrue);
+
+    put(WheelColor.purple, 5); // player 2: yellow–orange–red–purple
+    expect(state.lastMove!.points, 4, reason: 'the whole chain still scores');
+    expect([n[0], n[1], n[2]].every((f) => f.owner == 0), isTrue);
+    expect(n[5].owner, 1);
+    expect(n[5].secured, isTrue);
+    expect(state.total(1), 4 + 1, reason: '4 points plus the new field');
+  });
+
   test('computer games always finish on every level', () {
     for (final level in levels) {
       final rng = Random(level.number);

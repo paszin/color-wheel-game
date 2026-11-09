@@ -117,11 +117,13 @@ class _RulesSheet extends StatelessWidget {
                         ),
                         Expanded(
                           child: Text(
-                            'Jede gelegte Karte gehört dir. Wenn du punktest, '
-                            'übernimmst du zusätzlich alle beteiligten Karten – '
-                            'auch die deines Gegenübers. Der Ring zeigt, wem ein '
-                            'Feld gehört: einfach für Spieler 1, doppelt für '
-                            'Spieler 2.',
+                            'Jede gelegte Karte gehört dir, zunächst nur '
+                            'vorläufig (blasser Ring). Wer als Erstes mit einer '
+                            'Karte punktet, sichert sie sich (kräftiger Ring) – '
+                            'auch Karten des Gegenübers, solange sie nicht '
+                            'gesichert sind. Gesicherte Felder bleiben, wem sie '
+                            'gehören; Punkte gibt es trotzdem voll. Einfacher '
+                            'Ring: Spieler 1, doppelter: Spieler 2.',
                             style: AppText.body(15),
                           ),
                         ),

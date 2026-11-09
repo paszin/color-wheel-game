@@ -124,6 +124,14 @@ void main() {
     expect(pointsOf(m, ScoreKind.sequence), 3);
   });
 
+  test('secured fields are not claimed, but still score', () {
+    final board = line([y, o, null]);
+    board.nodes[0].secured = true;
+    final m = evaluateMove(board.nodes[2], r);
+    expect(pointsOf(m, ScoreKind.sequence), 3);
+    expect(m.claimed, {board.nodes[1], board.nodes[2]});
+  });
+
   test('evaluateMove leaves the board untouched', () {
     final board = line([y, null]);
     evaluateMove(board.nodes[1], p);

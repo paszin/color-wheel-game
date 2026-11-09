@@ -30,8 +30,17 @@ class MoveResult {
 
   int get points => events.fold(0, (s, e) => s + e.points);
 
-  /// Every field that changes to the scoring player, including [node].
-  Set<ColorNode> get claimed => {node, for (final e in events) ...e.nodes};
+  /// Whether the move scores and therefore secures its fields.
+  bool get secures => events.isNotEmpty;
+
+  /// Every field that goes to the player making the move: [node] itself and
+  /// each scoring field nobody has secured yet. Secured fields stay put.
+  Set<ColorNode> get claimed => {
+    node,
+    for (final e in events)
+      for (final n in e.nodes)
+        if (!n.secured) n,
+  };
 }
 
 const sameColorPoints = 1;

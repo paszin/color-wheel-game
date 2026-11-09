@@ -3,8 +3,8 @@ import 'dart:ui' show Offset;
 import '../theme/palette.dart';
 
 /// One field of the board graph. A field is empty until a colour card is
-/// placed on it; afterwards [color] never changes, but [owner] can, because
-/// scoring claims every card involved.
+/// placed on it; afterwards [color] never changes, but [owner] can, until the
+/// card is [secured] by the first scoring move it takes part in.
 class ColorNode {
   ColorNode(this.id, this.position);
 
@@ -20,6 +20,10 @@ class ColorNode {
   /// Index of the owning player, or null for an empty field or a neutral
   /// pre-printed card.
   int? owner;
+
+  /// Set once a card is part of a scoring move. A secured card keeps its
+  /// owner for the rest of the game; until then the next scorer takes it.
+  bool secured = false;
 
   bool get isEmpty => color == null;
 
