@@ -6,6 +6,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/painting.dart';
 
+import '../config.dart';
 import '../logic/game_state.dart';
 import '../logic/scoring.dart';
 import '../model/board.dart';
@@ -294,6 +295,7 @@ class NodeComponent extends PositionComponent
     }
 
     Watercolor.drawDisc(canvas, c, r, selected.pigment, seed, opacity: 0.5);
+    if (!showPointPreview) return;
     if (_previewColor != selected) {
       _previewColor = selected;
       _previewPoints = evaluateMove(node, selected).points;

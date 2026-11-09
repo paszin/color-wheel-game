@@ -105,6 +105,20 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  /// Shown before the first move against the computer.
+  bool get _canLetComputerStart =>
+      widget.mode == GameMode.vsComputer && _state.notStarted && _humanTurn;
+
+  void _letComputerStart() {
+    if (!_canLetComputerStart) return;
+    _state.secondPlayerStarts();
+    setState(() {
+      _selected = null;
+      _syncGame();
+    });
+    _timer = Timer(const Duration(milliseconds: 600), _computerTurn);
+  }
+
   void _computerTurn() {
     if (!mounted || _state.isOver) return;
     final move = chooseAiMove(
@@ -180,7 +194,27 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
               Expanded(
-                child: GameWidget(key: ObjectKey(_game), game: _game),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: GameWidget(key: ObjectKey(_game), game: _game),
+                    ),
+                    if (_canLetComputerStart)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: BrushButton(
+                            label: 'Computer fängt an',
+                            onPressed: _letComputerStart,
+                            color: WheelColor.purple,
+                            seed: 11,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
               Text(
                 _status,

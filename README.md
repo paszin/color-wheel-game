@@ -33,13 +33,15 @@ Gewertet wird die längste Farbfolge durch die neue Karte.
 
 **Nachziehen:** Farben, die schon auf der Hand sind, kommen seltener nach (Gewicht 1 / (1 + 3 · Anzahl)). So hat man selten zweimal dieselbe Farbe.
 
+**Punktevorschau:** Mit dem URL-Parameter `?punkte` zeigt das Spiel beim Überfahren eines Felds an, wie viele Punkte die gewählte Karte dort bringen würde: https://paszin.github.io/color-wheel-game/?punkte. Ohne den Parameter bleibt das verborgen.
+
 ## Modi und Level
 
 <p align="center">
   <img src="docs/screenshots/levels.jpg" width="250" alt="Levelauswahl mit Schwierigkeit Leicht, Mittel, Schwer und acht Spielbrettern">
 </p>
 
-- **Gegen den Computer:** acht Level. Jeder Sieg schaltet das nächste frei. Der Computer lässt sich auf **Leicht**, **Mittel** oder **Schwer** stellen. Auf Mittel wird er von Level zu Level stärker, auf Schwer spielt er überall fast optimal und blockiert Felder, auf denen du sofort punkten könntest.
+- **Gegen den Computer:** acht Level. Jeder Sieg schaltet das nächste frei. Der Computer lässt sich auf **Leicht**, **Mittel** oder **Schwer** stellen. Vor dem ersten Zug kannst du mit „Computer fängt an“ den Computer beginnen lassen. Auf Mittel wird er von Level zu Level stärker, auf Schwer spielt er überall fast optimal und blockiert Felder, auf denen du sofort punkten könntest.
 - **Zwei Spieler:** abwechselnd am selben Gerät, alle Level frei wählbar.
 
 | # | Brett | Besonderheit |

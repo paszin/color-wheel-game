@@ -48,6 +48,16 @@ class GameState extends ChangeNotifier {
 
   PlayerState get currentPlayer => players[current];
 
+  /// True until the first card is placed.
+  bool get notStarted => lastMove == null;
+
+  /// Lets the second player (the computer) make the first move.
+  void secondPlayerStarts() {
+    if (!notStarted) throw StateError('The game has already started');
+    current = 1;
+    notifyListeners();
+  }
+
   bool get isOver => board.isFull;
 
   int ownedFields(int player) =>

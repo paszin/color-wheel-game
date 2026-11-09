@@ -85,6 +85,20 @@ void main() {
     expect(state.total(1), 4 + 1, reason: '4 points plus the new field');
   });
 
+  test('the computer can make the first move', () {
+    final state = GameState(levels.first, GameMode.vsComputer, rng: Random(1));
+    expect(state.notStarted, isTrue);
+    state.secondPlayerStarts();
+    expect(state.currentPlayer.isComputer, isTrue);
+
+    final move = chooseAiMove(state, 0.5, Random(1));
+    state.play(move.handIndex, move.node);
+    expect(move.node.owner, 1);
+    expect(state.current, 0);
+    expect(state.notStarted, isFalse);
+    expect(state.secondPlayerStarts, throwsStateError);
+  });
+
   test('computer games always finish on every level', () {
     for (final level in levels) {
       final rng = Random(level.number);
