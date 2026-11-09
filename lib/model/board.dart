@@ -25,6 +25,10 @@ class ColorNode {
   /// owner for the rest of the game; until then the next scorer takes it.
   bool secured = false;
 
+  /// Set once the card is part of a completed full colour wheel. It stays on
+  /// the board and keeps its owner, but never scores again.
+  bool used = false;
+
   bool get isEmpty => color == null;
 
   @override

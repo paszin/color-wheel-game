@@ -132,6 +132,18 @@ void main() {
     expect(m.claimed, {board.nodes[1], board.nodes[2]});
   });
 
+  test('cards of a completed full wheel no longer score', () {
+    final board = line([y, o, r, p, b, g, null]);
+    for (final n in board.nodes.take(6)) {
+      n.used = true;
+    }
+    // Yellow after green would extend the wheel; red next to green would be
+    // complementary. Neither counts any more.
+    expect(evaluateMove(board.nodes[6], y).points, 0);
+    expect(evaluateMove(board.nodes[6], r).points, 0);
+    expect(evaluateMove(board.nodes[6], g).points, 0);
+  });
+
   test('evaluateMove leaves the board untouched', () {
     final board = line([y, null]);
     evaluateMove(board.nodes[1], p);

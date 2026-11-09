@@ -25,6 +25,8 @@ Der Farbkreis hat sechs Farben: **Gelb → Orange → Rot → Violett → Blau �
 | **Farbfolge**: Kette verbundener Karten, die dem Farbkreis Schritt für Schritt folgt (vorwärts oder rückwärts, auch über Grün zurück zu Gelb), ab 3 Karten | 1 je Karte |
 | **Voller Farbkreis**: Die Farbfolge enthält alle sechs Farben | +3 Bonus |
 
+Ist ein voller Farbkreis geschlossen, verblassen seine Karten. Sie bleiben liegen und gehören weiter ihrem Besitzer, bringen aber keine Punkte mehr, weder als Nachbar noch in einer Farbfolge.
+
 Gewertet wird die längste Farbfolge durch die neue Karte.
 
 **Felder erobern:** Jede gelegte Karte gehört zunächst vorläufig dem Spieler, der sie gelegt hat (blasser Ring). Wer als Erstes mit einer Karte punktet, sichert sie sich (kräftiger Ring), auch wenn sie vorher dem Gegner gehörte. Gesicherte Felder wechseln nicht mehr den Besitzer. Die Punkte gibt es trotzdem voll: Macht Spieler 1 mit Gelb–Orange–Rot 3 Punkte und Spieler 2 legt Violett an, bekommt Spieler 2 alle 4 Punkte der Farbfolge, aber nur das neue Feld, nicht die drei schon gesicherten. Ein einfacher Ring steht für Spieler 1, ein doppelter für Spieler 2.

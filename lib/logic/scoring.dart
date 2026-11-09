@@ -60,12 +60,15 @@ const _pathLimit = 4000;
 ///   colour wheel step by step (either direction, wrapping from green back to
 ///   yellow) scores its length, if it is at least 3 long. A chain that
 ///   contains all six colours earns a bonus.
+/// * Cards of an earlier full wheel ([ColorNode.used]) take no part.
 MoveResult evaluateMove(ColorNode node, WheelColor color) {
-  WheelColor? colorOf(ColorNode n) => identical(n, node) ? color : n.color;
+  // Cards of a completed full wheel count as if the field were empty.
+  WheelColor? colorOf(ColorNode n) =>
+      identical(n, node) ? color : (n.used ? null : n.color);
 
   final events = <ScoreEvent>[];
   for (final n in node.neighbors) {
-    final c = n.color;
+    final c = colorOf(n);
     if (c == null) continue;
     if (c == color) {
       events.add(ScoreEvent(ScoreKind.same, [node, n], sameColorPoints));

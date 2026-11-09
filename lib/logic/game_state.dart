@@ -88,6 +88,13 @@ class GameState extends ChangeNotifier {
       n.owner = current;
       if (result.secures) n.secured = true;
     }
+    for (final e in result.events) {
+      if (e.kind == ScoreKind.fullWheel) {
+        for (final n in e.nodes) {
+          n.used = true;
+        }
+      }
+    }
     player.points += result.points;
     final rest = [...player.hand]..removeAt(handIndex);
     player.hand[handIndex] = drawCard(rest, rng);

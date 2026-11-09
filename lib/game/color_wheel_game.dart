@@ -176,6 +176,10 @@ class NodeComponent extends PositionComponent
   double _pulseDelay = 0;
   bool _hovered = false;
 
+  /// Opacity of the card; fades once it belongs to a completed full wheel.
+  double _fade = 1;
+  static const _usedOpacity = 0.4;
+
   // Memo for the hover preview.
   WheelColor? _previewColor;
   int _previewPoints = 0;
@@ -208,6 +212,12 @@ class NodeComponent extends PositionComponent
     } else if (_pulse > 0) {
       _pulse = math.max(0, _pulse - dt * 1.4);
     }
+    final target = node.used ? _usedOpacity : 1.0;
+    if (_fade != target && _pulseDelay <= 0 && _pulse < 0.5) {
+      _fade = _fade > target
+          ? math.max(target, _fade - dt * 0.8)
+          : math.min(target, _fade + dt * 0.8);
+    }
   }
 
   @override
@@ -231,7 +241,7 @@ class NodeComponent extends PositionComponent
         r * 1.1,
         owner,
         seed,
-        opacity: node.secured ? 1 : 0.4,
+        opacity: (node.secured ? 1 : 0.4) * _fade,
       );
       if (_pulse > 0 && _pulseDelay <= 0) {
         final t = 1 - _pulse;
@@ -252,7 +262,7 @@ class NodeComponent extends PositionComponent
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(1, r * 0.035)
-          ..color = Inks.graphite.withValues(alpha: 0.5),
+          ..color = Inks.graphite.withValues(alpha: 0.5 * _fade),
       );
     }
 
@@ -264,7 +274,7 @@ class NodeComponent extends PositionComponent
       color.pigment,
       seed,
       scale: scale,
-      opacity: math.min(1, _grow * 2.5),
+      opacity: math.min(1, _grow * 2.5) * _fade,
     );
   }
 

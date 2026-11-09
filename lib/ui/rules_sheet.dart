@@ -95,7 +95,10 @@ class _RulesSheet extends StatelessWidget {
                     const _RuleRow(
                       colors: WheelColor.values,
                       title: 'Voller Farbkreis · +3 Bonus',
-                      text: 'Wenn eine Farbfolge alle sechs Farben enthält.',
+                      text:
+                          'Wenn eine Farbfolge alle sechs Farben enthält. '
+                          'Danach verblassen diese Karten und bringen keine '
+                          'Punkte mehr.',
                     ),
                     const SizedBox(height: 10),
                     Text('Felder erobern', style: AppText.title(26)),

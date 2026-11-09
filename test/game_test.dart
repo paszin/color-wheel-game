@@ -4,6 +4,7 @@ import 'package:color_wheel_game/logic/ai.dart';
 import 'package:color_wheel_game/logic/deck.dart';
 import 'package:color_wheel_game/logic/difficulty.dart';
 import 'package:color_wheel_game/logic/game_state.dart';
+import 'package:color_wheel_game/logic/scoring.dart';
 import 'package:color_wheel_game/model/levels.dart';
 import 'package:color_wheel_game/theme/palette.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -97,6 +98,23 @@ void main() {
     expect(state.current, 0);
     expect(state.notStarted, isFalse);
     expect(state.secondPlayerStarts, throwsStateError);
+  });
+
+  test('closing a full wheel retires its cards', () {
+    // Level 2 is a 4 × 4 grid; 0–1–2–3 / 7–6 snakes through six fields.
+    final state = GameState(levels[1], GameMode.twoPlayers, rng: Random(2));
+    final n = state.board.nodes;
+    final path = [0, 1, 2, 3, 7, 6];
+    for (var i = 0; i < 6; i++) {
+      state.players[state.current].hand[0] = WheelColor.values[i];
+      state.play(0, n[path[i]]);
+    }
+    expect(
+      state.lastMove!.events.map((e) => e.kind),
+      contains(ScoreKind.fullWheel),
+    );
+    expect(path.every((i) => n[i].used), isTrue);
+    expect(n[5].used, isFalse);
   });
 
   test('computer games always finish on every level', () {
