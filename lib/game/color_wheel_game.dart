@@ -32,6 +32,9 @@ class ColorWheelGame extends FlameGame {
   /// Field the tutorial asks for; it pulses while [interactive].
   int? hintNode;
 
+  /// Painted field whose colour is currently named below the board.
+  int? inspectedNode;
+
   double nodeRadius = 24;
   int layoutVersion = 0;
   final Map<int, NodeComponent> nodeComponents = {};
@@ -340,6 +343,21 @@ class NodeComponent extends PositionComponent
       scale: scale,
       opacity: math.min(1, _grow * 2.5),
     );
+
+    if (game.inspectedNode == node.id) {
+      canvas.drawPath(
+        Watercolor.wobblyCircle(
+          c,
+          r * 1.3,
+          math.Random(seed + 11),
+          roughness: 0.04,
+        ),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(2, r * 0.08)
+          ..color = Inks.ink.withValues(alpha: 0.6),
+      );
+    }
   }
 
   void _renderEmpty(Canvas canvas, Offset c, double r, int seed) {
