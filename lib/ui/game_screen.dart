@@ -223,7 +223,7 @@ class _GameScreenState extends State<GameScreen> {
                     for (var i = 0; i < 2; i++) ...[
                       if (i == 1) const SizedBox(width: 12),
                       Expanded(
-                        child: _PlayerPanel(
+                        child: PlayerPanel(
                           state: _state,
                           index: i,
                           showMiniHand: i != _handOwner,
@@ -257,7 +257,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              _HandRow(
+              HandRow(
                 hand: _state.players[_handOwner].hand,
                 player: _handOwner,
                 selected: _selected,
@@ -375,8 +375,10 @@ class _OwnerMarkPainter extends CustomPainter {
   bool shouldRepaint(_OwnerMarkPainter old) => old.player != player;
 }
 
-class _PlayerPanel extends StatelessWidget {
-  const _PlayerPanel({
+/// Name, total, points and fields of one player.
+class PlayerPanel extends StatelessWidget {
+  const PlayerPanel({
+    super.key,
     required this.state,
     required this.index,
     required this.showMiniHand,
@@ -450,8 +452,10 @@ class _PlayerPanel extends StatelessWidget {
   }
 }
 
-class _HandRow extends StatelessWidget {
-  const _HandRow({
+/// The cards of one hand, the selected one lifted.
+class HandRow extends StatelessWidget {
+  const HandRow({
+    super.key,
     required this.hand,
     required this.player,
     required this.selected,

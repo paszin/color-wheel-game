@@ -5,6 +5,7 @@ import '../theme/palette.dart';
 import '../theme/typography.dart';
 import 'level_select_screen.dart';
 import 'rules_sheet.dart';
+import 'tutorial_screen.dart';
 import 'widgets.dart';
 
 class MenuScreen extends StatelessWidget {
@@ -48,6 +49,18 @@ class MenuScreen extends StatelessWidget {
                   color: WheelColor.orange,
                   seed: 12,
                   onPressed: () => _open(context, GameMode.twoPlayers),
+                ),
+                const SizedBox(height: 14),
+                BrushButton(
+                  label: 'Tutorial',
+                  color: WheelColor.purple,
+                  seed: 14,
+                  fontSize: 24,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const TutorialScreen(),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 BrushButton(

@@ -29,6 +29,9 @@ class ColorWheelGame extends FlameGame {
   /// False while the computer moves or the game is over.
   bool interactive = true;
 
+  /// Field the tutorial asks for; it pulses while [interactive].
+  int? hintNode;
+
   double nodeRadius = 24;
   int layoutVersion = 0;
   final Map<int, NodeComponent> nodeComponents = {};
@@ -244,6 +247,7 @@ class NodeComponent extends PositionComponent
   double _pulse = 0;
   double _pulseDelay = 0;
   bool _hovered = false;
+  double _clock = 0;
 
   // Memo for the hover preview.
   WheelColor? _previewColor;
@@ -271,6 +275,7 @@ class NodeComponent extends PositionComponent
 
   @override
   void update(double dt) {
+    _clock += dt;
     if (_grow < 1) _grow = math.min(1, _grow + dt * 2.2);
     if (_pulseDelay > 0) {
       _pulseDelay -= dt;
@@ -351,6 +356,22 @@ class NodeComponent extends PositionComponent
         ..strokeWidth = math.max(1, r * 0.035)
         ..color = Inks.graphite.withValues(alpha: 0.38),
     );
+
+    if (game.hintNode == node.id && game.interactive) {
+      final wave = 0.5 + 0.5 * math.sin(_clock * 4);
+      canvas.drawPath(
+        Watercolor.wobblyCircle(
+          c,
+          r * (1.12 + 0.08 * wave),
+          math.Random(seed + 9),
+          roughness: 0.04,
+        ),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(2, r * 0.09)
+          ..color = Inks.ink.withValues(alpha: 0.3 + 0.4 * wave),
+      );
+    }
 
     final selected = game.selectedColor;
     if (selected == null || !game.interactive) return;
