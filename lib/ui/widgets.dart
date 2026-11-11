@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../audio/sound.dart';
 import '../painting/watercolor.dart';
 import '../theme/palette.dart';
 import '../theme/typography.dart';
@@ -265,7 +266,12 @@ class _BrushButtonState extends State<BrushButton> {
         onTapDown: enabled ? (_) => setState(() => _down = true) : null,
         onTapCancel: () => setState(() => _down = false),
         onTapUp: (_) => setState(() => _down = false),
-        onTap: widget.onPressed,
+        onTap: enabled
+            ? () {
+                Sound.click();
+                widget.onPressed!();
+              }
+            : null,
         child: Semantics(
           button: true,
           label: widget.label,
@@ -310,11 +316,35 @@ class RoundIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-    onPressed: onPressed,
+    onPressed: () {
+      Sound.click();
+      onPressed();
+    },
     tooltip: tooltip,
     icon: Icon(icon, color: Inks.ink.withValues(alpha: 0.75)),
     style: IconButton.styleFrom(
       backgroundColor: Inks.paperShade.withValues(alpha: 0.5),
+    ),
+  );
+}
+
+/// Switches music and sound effects on or off.
+class SoundButton extends StatelessWidget {
+  const SoundButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+    valueListenable: Sound.muted,
+    builder: (context, muted, _) => IconButton(
+      onPressed: Sound.toggleMuted,
+      tooltip: muted ? 'Ton an' : 'Ton aus',
+      icon: Icon(
+        muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+        color: Inks.ink.withValues(alpha: 0.75),
+      ),
+      style: IconButton.styleFrom(
+        backgroundColor: Inks.paperShade.withValues(alpha: 0.5),
+      ),
     ),
   );
 }

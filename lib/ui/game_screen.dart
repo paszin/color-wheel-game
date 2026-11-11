@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
+import '../audio/sound.dart';
 import '../game/color_wheel_game.dart';
 import '../logic/advance.dart';
 import '../logic/ai.dart';
@@ -85,8 +86,10 @@ class _GameScreenState extends State<GameScreen> {
 
   void _select(int i) {
     if (!_humanTurn) return;
+    final deselect = _selected == i;
+    deselect ? Sound.deselect() : Sound.select();
     setState(() {
-      _selected = _selected == i ? null : i;
+      _selected = deselect ? null : i;
       _syncGame();
     });
   }
@@ -148,12 +151,18 @@ class _GameScreenState extends State<GameScreen> {
       final previousBest = await Progress.best(level);
       await Progress.submitBest(level, mine);
       final losses = await Progress.recordResult(level, won: won);
+      final unlocks =
+          won && level < levels.length && level >= await Progress.unlocked();
       if (won) await Progress.unlock(level + 1);
       if (!mounted || !identical(state, _state)) return;
       _previousBest = previousBest;
       _skip = won
           ? null
           : skipReason(mine: mine, theirs: theirs, lossesInRow: losses);
+      won ? Sound.win() : Sound.lose();
+      if (unlocks) Sound.unlockLevel(delay: 1.6);
+    } else {
+      state.winner == null ? Sound.lose() : Sound.win();
     }
     setState(() => _showResult = true);
   }
@@ -309,6 +318,8 @@ class _TopBar extends StatelessWidget {
             tooltip: 'Levelauswahl',
             onPressed: onBack,
           ),
+          // Balances the two buttons on the right so the title stays centred.
+          const SizedBox(width: 52),
           Expanded(
             child: Column(
               children: [
@@ -322,6 +333,8 @@ class _TopBar extends StatelessWidget {
             tooltip: 'Spielregeln',
             onPressed: onRules,
           ),
+          const SizedBox(width: 4),
+          const SoundButton(),
         ],
       ),
     );

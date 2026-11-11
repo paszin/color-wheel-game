@@ -66,7 +66,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
             child: Row(
               children: [
                 RoundIconButton(
@@ -83,6 +83,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                     style: AppText.title(30),
                   ),
                 ),
+                const SoundButton(),
               ],
             ),
           ),

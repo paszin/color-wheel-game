@@ -6,6 +6,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/painting.dart';
 
+import '../audio/sound.dart';
 import '../config.dart';
 import '../logic/game_state.dart';
 import '../logic/scoring.dart';
@@ -101,8 +102,18 @@ class ColorWheelGame extends FlameGame {
   void showMove(MoveResult result, int player) {
     final placed = nodeComponents[result.node.id];
     placed?.bloom();
-    var delay = 0.35;
-    for (final e in result.events) {
+    // Each score event starts its animation, and its sound, a bit later.
+    final delays = [
+      for (var i = 0; i < result.events.length; i++) 0.35 + i * 0.45,
+    ];
+    Sound.move(
+      result,
+      byComputer: state.players[player].isComputer,
+      delays: delays,
+    );
+    for (var i = 0; i < result.events.length; i++) {
+      final e = result.events[i];
+      final delay = delays[i];
       add(ScoreLink(e, player, delay: delay));
       final centroid =
           e.nodes
@@ -125,7 +136,6 @@ class ColorWheelGame extends FlameGame {
           nodeComponents[n.id]?.claimed(delay + 0.3);
         }
       }
-      delay += 0.45;
     }
   }
 }

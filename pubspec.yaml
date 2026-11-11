@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.38.2
   shared_preferences: ^2.5.6
+  flame_audio: ^2.12.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -77,10 +78,10 @@ flutter:
         - asset: assets/fonts/Nunito-Regular.ttf
           weight: 400
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # Background music and sound effects (CC0, see assets/audio/CREDITS.md).
+  assets:
+    - assets/audio/
+    - assets/audio/sfx/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

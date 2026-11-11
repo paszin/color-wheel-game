@@ -22,7 +22,7 @@ class MenuScreen extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final emblem = (constraints.maxHeight * 0.36).clamp(160.0, 300.0);
-          return Padding(
+          final content = Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
@@ -60,6 +60,12 @@ class MenuScreen extends StatelessWidget {
                 const Spacer(),
               ],
             ),
+          );
+          return Stack(
+            children: [
+              Positioned.fill(child: content),
+              const Positioned(top: 8, right: 8, child: SoundButton()),
+            ],
           );
         },
       ),

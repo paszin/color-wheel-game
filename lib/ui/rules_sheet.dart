@@ -2,12 +2,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../audio/sound.dart';
 import '../painting/watercolor.dart';
 import '../theme/palette.dart';
 import '../theme/typography.dart';
 import 'widgets.dart';
 
 Future<void> showRules(BuildContext context) {
+  Sound.page();
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
