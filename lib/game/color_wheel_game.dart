@@ -32,7 +32,7 @@ class ColorWheelGame extends FlameGame {
   /// Field the tutorial asks for; it pulses while [interactive].
   int? hintNode;
 
-  /// Painted field whose colour is currently named below the board.
+  /// Painted field whose colour name is shown next to it.
   int? inspectedNode;
 
   double nodeRadius = 24;
@@ -45,6 +45,7 @@ class ColorWheelGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     add(EdgesComponent());
+    add(InspectLabel());
     for (final node in state.board.nodes) {
       final c = NodeComponent(node);
       nodeComponents[node.id] = c;
@@ -468,6 +469,31 @@ void _drawLabel(
   final o = c - Offset(fill.width / 2, fill.height / 2);
   halo.paint(canvas, o);
   fill.paint(canvas, o);
+}
+
+/// Name of the colour on [ColorWheelGame.inspectedNode], above the field,
+/// or below it when the field sits at the top edge.
+class InspectLabel extends Component with HasGameReference<ColorWheelGame> {
+  InspectLabel() : super(priority: 90);
+
+  @override
+  void render(Canvas canvas) {
+    final id = game.inspectedNode;
+    final color = id == null ? null : game.state.board.nodes[id].color;
+    if (id == null || color == null) return;
+    final c = game.nodeComponents[id]!.position.toOffset();
+    final r = game.nodeRadius;
+    final size = math.max(20.0, r * 0.75);
+    final gap = r * 1.35 + size * 0.6;
+    final above = c.dy - gap - size * 0.6 >= 0;
+    _drawLabel(
+      canvas,
+      color.label,
+      c + Offset(0, above ? -gap : gap),
+      size,
+      Inks.ink,
+    );
+  }
 }
 
 /// Floating "+2 Komplementär" text.

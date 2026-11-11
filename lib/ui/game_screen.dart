@@ -43,9 +43,7 @@ class _GameScreenState extends State<GameScreen> {
   bool _showResult = false;
   Timer? _timer;
 
-  /// Colour of a painted field the player tapped to read its name; shown
-  /// for a moment on levels with twelve colours, where neighbours look alike.
-  WheelColor? _inspected;
+  /// Hides the name of a tapped painted field again (twelve-colour levels).
   Timer? _inspectTimer;
 
   /// Best own total on this level before the finished game (vs computer).
@@ -110,28 +108,26 @@ class _GameScreenState extends State<GameScreen> {
 
   bool get _canInspect => widget.level.wheel.length > ColorWheel.classic.length;
 
-  /// Shows the colour of a painted field; tapping it again hides it.
+  /// Names the colour of a painted field on the board for a moment, since
+  /// neighbouring tones look alike; tapping it again hides the name.
   /// Returns false for empty fields, which keep their usual meaning.
   bool _inspect(ColorNode node) {
-    final color = node.color;
-    if (!_canInspect || color == null) return false;
+    if (!_canInspect || node.isEmpty) return false;
     final again = _game.inspectedNode == node.id;
     _clearInspected();
     if (!again) {
-      _inspected = color;
       _game.inspectedNode = node.id;
-      _inspectTimer = Timer(const Duration(milliseconds: 2500), () {
-        if (mounted) setState(_clearInspected);
-      });
+      _inspectTimer = Timer(
+        const Duration(milliseconds: 2500),
+        _clearInspected,
+      );
     }
-    setState(() {});
     return true;
   }
 
   void _clearInspected() {
     _inspectTimer?.cancel();
     _inspectTimer = null;
-    _inspected = null;
     _game.inspectedNode = null;
   }
 
@@ -228,8 +224,6 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   String get _status {
-    final inspected = _inspected;
-    if (inspected != null) return 'Dieses Feld: ${inspected.label}';
     if (_state.isOver) return 'Alle Felder sind bemalt';
     final p = _state.currentPlayer;
     if (p.isComputer) return 'Der Computer malt …';
@@ -279,10 +273,7 @@ class _GameScreenState extends State<GameScreen> {
               SizedBox(
                 height: 44,
                 child: Center(
-                  child:
-                      _canLetComputerStart &&
-                          _selected == null &&
-                          _inspected == null
+                  child: _canLetComputerStart && _selected == null
                       ? BrushButton(
                           label: 'Computer fängt an',
                           onPressed: _letComputerStart,
@@ -308,7 +299,7 @@ class _GameScreenState extends State<GameScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
                 child: WheelStrip(
-                  selected: _inspected ?? _game.selectedColor,
+                  selected: _game.selectedColor,
                   wheel: widget.level.wheel,
                 ),
               ),
