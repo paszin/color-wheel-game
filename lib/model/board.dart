@@ -25,9 +25,10 @@ class ColorNode {
   /// owner for the rest of the game; until then the next scorer takes it.
   bool secured = false;
 
-  /// Set once the card is part of a completed full colour wheel. It stays on
-  /// the board and keeps its owner, but never scores again.
-  bool used = false;
+  /// Neighbours this card was linked to in a completed full colour wheel.
+  /// A sequence can no longer run along these links; same colour and
+  /// complement still score, and a new sequence may still include the card.
+  final Set<ColorNode> spentLinks = {};
 
   bool get isEmpty => color == null;
 

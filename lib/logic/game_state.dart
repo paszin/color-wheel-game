@@ -90,8 +90,9 @@ class GameState extends ChangeNotifier {
     }
     for (final e in result.events) {
       if (e.kind == ScoreKind.fullWheel) {
-        for (final n in e.nodes) {
-          n.used = true;
+        for (var i = 0; i + 1 < e.nodes.length; i++) {
+          e.nodes[i].spentLinks.add(e.nodes[i + 1]);
+          e.nodes[i + 1].spentLinks.add(e.nodes[i]);
         }
       }
     }

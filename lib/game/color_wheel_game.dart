@@ -114,12 +114,68 @@ class ColorWheelGame extends FlameGame {
           delay: delay,
         ),
       );
+      if (e.kind == ScoreKind.fullWheel) {
+        add(SpentChain(e.nodes, delay: delay + 0.8));
+      }
       for (final n in e.nodes) {
         if (!identical(n, result.node)) {
           nodeComponents[n.id]?.claimed(delay + 0.3);
         }
       }
       delay += 0.45;
+    }
+  }
+}
+
+/// Grey line through the cards of a completed full wheel: these links are
+/// spent and no sequence can run along them again. Drawn on top of the
+/// cards, sketched in from the first card to the last.
+class SpentChain extends Component with HasGameReference<ColorWheelGame> {
+  SpentChain(this.nodes, {this.delay = 0}) : super(priority: 20);
+
+  final List<ColorNode> nodes;
+
+  /// Seconds until the line starts to appear.
+  double delay;
+  double _progress = 0;
+
+  @override
+  void update(double dt) {
+    if (delay > 0) {
+      delay -= dt;
+    } else if (_progress < 1) {
+      _progress = math.min(1, _progress + dt * 1.2);
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (_progress <= 0) return;
+    final points = [
+      for (final n in nodes) game.nodeComponents[n.id]!.position.toOffset(),
+    ];
+    final segments = points.length - 1;
+    final reach = _progress * segments;
+    final rng = math.Random(nodes.first.id * 31 + nodes.last.id);
+    final r = game.nodeRadius;
+    for (var i = 0; i < segments; i++) {
+      final t = (reach - i).clamp(0.0, 1.0);
+      final a = points[i];
+      final b = points[i + 1];
+      // Consume the random numbers for every segment so the wobble does
+      // not change while the line grows.
+      final end = Offset.lerp(a, b, t)!;
+      final segRng = math.Random(rng.nextInt(1 << 30));
+      if (t <= 0) continue;
+      Watercolor.pencilLine(
+        canvas,
+        a,
+        end,
+        segRng,
+        color: Inks.graphite,
+        width: math.max(2.5, r * 0.14),
+        opacity: 0.6,
+      );
     }
   }
 }
@@ -176,10 +232,6 @@ class NodeComponent extends PositionComponent
   double _pulseDelay = 0;
   bool _hovered = false;
 
-  /// Opacity of the card; fades once it belongs to a completed full wheel.
-  double _fade = 1;
-  static const _usedOpacity = 0.4;
-
   // Memo for the hover preview.
   WheelColor? _previewColor;
   int _previewPoints = 0;
@@ -212,12 +264,6 @@ class NodeComponent extends PositionComponent
     } else if (_pulse > 0) {
       _pulse = math.max(0, _pulse - dt * 1.4);
     }
-    final target = node.used ? _usedOpacity : 1.0;
-    if (_fade != target && _pulseDelay <= 0 && _pulse < 0.5) {
-      _fade = _fade > target
-          ? math.max(target, _fade - dt * 0.8)
-          : math.min(target, _fade + dt * 0.8);
-    }
   }
 
   @override
@@ -241,7 +287,7 @@ class NodeComponent extends PositionComponent
         r * 1.1,
         owner,
         seed,
-        opacity: (node.secured ? 1 : 0.4) * _fade,
+        opacity: node.secured ? 1 : 0.4,
       );
       if (_pulse > 0 && _pulseDelay <= 0) {
         final t = 1 - _pulse;
@@ -262,7 +308,7 @@ class NodeComponent extends PositionComponent
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(1, r * 0.035)
-          ..color = Inks.graphite.withValues(alpha: 0.5 * _fade),
+          ..color = Inks.graphite.withValues(alpha: 0.5),
       );
     }
 
@@ -274,7 +320,7 @@ class NodeComponent extends PositionComponent
       color.pigment,
       seed,
       scale: scale,
-      opacity: math.min(1, _grow * 2.5) * _fade,
+      opacity: math.min(1, _grow * 2.5),
     );
   }
 

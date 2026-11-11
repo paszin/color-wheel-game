@@ -97,8 +97,11 @@ class _RulesSheet extends StatelessWidget {
                       title: 'Voller Farbkreis · +3 Bonus',
                       text:
                           'Wenn eine Farbfolge alle sechs Farben enthält. '
-                          'Danach verblassen diese Karten und bringen keine '
-                          'Punkte mehr.',
+                          'Eine graue Linie verbindet danach diesen Kreis: '
+                          'entlang dieser Linie zählt keine Farbfolge mehr. '
+                          'Gleiche Farbe und Komplementär punkten weiter, und '
+                          'eine neue Farbfolge darf eine dieser Karten '
+                          'einschließen.',
                     ),
                     const SizedBox(height: 10),
                     Text('Felder erobern', style: AppText.title(26)),

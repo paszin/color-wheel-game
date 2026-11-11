@@ -132,16 +132,48 @@ void main() {
     expect(m.claimed, {board.nodes[1], board.nodes[2]});
   });
 
-  test('cards of a completed full wheel no longer score', () {
-    final board = line([y, o, r, p, b, g, null]);
-    for (final n in board.nodes.take(6)) {
-      n.used = true;
+  group('after a full wheel', () {
+    /// Line y–o–r–p–b–g–(empty), with the wheel's links spent.
+    Board spentWheel() {
+      final board = line([y, o, r, p, b, g, null]);
+      for (var i = 0; i < 5; i++) {
+        board.nodes[i].spentLinks.add(board.nodes[i + 1]);
+        board.nodes[i + 1].spentLinks.add(board.nodes[i]);
+      }
+      return board;
     }
-    // Yellow after green would extend the wheel; red next to green would be
-    // complementary. Neither counts any more.
-    expect(evaluateMove(board.nodes[6], y).points, 0);
-    expect(evaluateMove(board.nodes[6], r).points, 0);
-    expect(evaluateMove(board.nodes[6], g).points, 0);
+
+    test('no sequence runs along the spent links', () {
+      final m = evaluateMove(spentWheel().nodes[6], y);
+      expect(pointsOf(m, ScoreKind.sequence), 0);
+    });
+
+    test('same colour and complement still score', () {
+      final board = spentWheel();
+      expect(pointsOf(evaluateMove(board.nodes[6], g), ScoreKind.same), 1);
+      expect(
+        pointsOf(evaluateMove(board.nodes[6], r), ScoreKind.complement),
+        2,
+      );
+    });
+
+    test('a new sequence may include one card of the spent line', () {
+      // Spent green (5) – new yellow (6) – orange (7): green, yellow,
+      // orange is a fresh chain of three.
+      final board = Board.fromSpec(
+        BoardSpec(
+          positions: [for (var i = 0; i < 8; i++) Offset(i * 1.0, 0)],
+          edges: [for (var i = 0; i < 7; i++) (i, i + 1)],
+          preset: const {0: y, 1: o, 2: r, 3: p, 4: b, 5: g, 7: o},
+        ),
+      );
+      for (var i = 0; i < 5; i++) {
+        board.nodes[i].spentLinks.add(board.nodes[i + 1]);
+        board.nodes[i + 1].spentLinks.add(board.nodes[i]);
+      }
+      final m = evaluateMove(board.nodes[6], y);
+      expect(pointsOf(m, ScoreKind.sequence), 3);
+    });
   });
 
   test('evaluateMove leaves the board untouched', () {

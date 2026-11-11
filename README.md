@@ -25,7 +25,7 @@ Der Farbkreis hat sechs Farben: **Gelb → Orange → Rot → Violett → Blau �
 | **Farbfolge**: Kette verbundener Karten, die dem Farbkreis Schritt für Schritt folgt (vorwärts oder rückwärts, auch über Grün zurück zu Gelb), ab 3 Karten | 1 je Karte |
 | **Voller Farbkreis**: Die Farbfolge enthält alle sechs Farben | +3 Bonus |
 
-Ist ein voller Farbkreis geschlossen, verblassen seine Karten. Sie bleiben liegen und gehören weiter ihrem Besitzer, bringen aber keine Punkte mehr, weder als Nachbar noch in einer Farbfolge.
+Ist ein voller Farbkreis geschlossen, verbindet eine graue Linie seine Karten. Entlang dieser Linie zählt keine Farbfolge mehr, der Kreis lässt sich also nicht noch einmal werten. Gleiche Farbe und Komplementär punkten mit diesen Karten weiter, und eine neue Farbfolge darf eine Karte der Linie einschließen, solange sie nicht an der grauen Linie entlangläuft.
 
 Gewertet wird die längste Farbfolge durch die neue Karte.
 

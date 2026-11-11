@@ -100,7 +100,7 @@ void main() {
     expect(state.secondPlayerStarts, throwsStateError);
   });
 
-  test('closing a full wheel retires its cards', () {
+  test('closing a full wheel spends its links', () {
     // Level 2 is a 4 × 4 grid; 0–1–2–3 / 7–6 snakes through six fields.
     final state = GameState(levels[1], GameMode.twoPlayers, rng: Random(2));
     final n = state.board.nodes;
@@ -113,8 +113,10 @@ void main() {
       state.lastMove!.events.map((e) => e.kind),
       contains(ScoreKind.fullWheel),
     );
-    expect(path.every((i) => n[i].used), isTrue);
-    expect(n[5].used, isFalse);
+    for (var i = 0; i + 1 < path.length; i++) {
+      expect(n[path[i]].spentLinks, contains(n[path[i + 1]]));
+    }
+    expect(n[0].spentLinks, isNot(contains(n[4])), reason: 'not in chain');
   });
 
   test('computer games always finish on every level', () {
