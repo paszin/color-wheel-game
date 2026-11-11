@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:color_wheel_game/logic/advance.dart';
 import 'package:color_wheel_game/logic/ai.dart';
 import 'package:color_wheel_game/logic/deck.dart';
 import 'package:color_wheel_game/logic/difficulty.dart';
@@ -21,6 +22,82 @@ void main() {
     // Weight of red is 1/7 against 1 for the other five → about 2.8 %.
     expect(red / draws, lessThan(0.06));
     expect(red, greaterThan(0));
+  });
+
+  test('six-colour levels never deal intermediate tones', () {
+    final rng = Random(4);
+    for (var i = 0; i < 2000; i++) {
+      expect(ColorWheel.classic.colors, contains(drawCard(const [], rng)));
+    }
+  });
+
+  test('twelve-colour levels deal four cards from all twelve colours', () {
+    final level = levels.firstWhere((l) => l.wheel == ColorWheel.extended);
+    final state = GameState(level, GameMode.twoPlayers, rng: Random(5));
+    expect(state.players[0].hand.length, 4);
+    expect(state.players[1].hand.length, 4);
+
+    final rng = Random(6);
+    final seen = <WheelColor>{
+      for (var i = 0; i < 2000; i++)
+        drawCard(const [], rng, wheel: ColorWheel.extended),
+    };
+    expect(seen, WheelColor.values.toSet());
+  });
+
+  test('levels 9 to 11 use twelve colours on larger boards', () {
+    final big = levels.where((l) => l.number >= 9).toList();
+    expect(big.map((l) => l.number), [9, 10, 11]);
+    final sizes = [for (final l in big) l.build().positions.length];
+    expect(sizes, [31, 37, 54]);
+    final largestClassic = levels
+        .where((l) => l.wheel == ColorWheel.classic)
+        .map((l) => l.build().positions.length)
+        .reduce(max);
+    for (final l in big) {
+      expect(l.wheel, ColorWheel.extended);
+      expect(l.handSize, 4);
+      expect(l.build().positions.length, greaterThan(largestClassic));
+    }
+  });
+
+  test('the computer finds a move on the largest board', () {
+    final state = GameState(levels.last, GameMode.vsComputer, rng: Random(7));
+    while (!state.isOver) {
+      final move = chooseAiMove(state, 1, Random(8));
+      state.play(move.handIndex, move.node);
+    }
+    expect(state.total(0) + state.total(1), greaterThan(54));
+  });
+
+  group('moving on without a win', () {
+    test('a close loss is at most 10 % of the winner, at least 3', () {
+      expect(isCloseLoss(17, 20), isTrue, reason: 'gap 3 on a small board');
+      expect(isCloseLoss(16, 20), isFalse);
+      expect(isCloseLoss(90, 100), isTrue, reason: 'gap 10 = 10 %');
+      expect(isCloseLoss(89, 100), isFalse);
+      expect(isCloseLoss(30, 30), isTrue, reason: 'a draw counts as close');
+      expect(isCloseLoss(31, 30), isFalse, reason: 'a win is no loss');
+    });
+
+    test('a close loss allows moving on right away', () {
+      expect(
+        skipReason(mine: 18, theirs: 20, lossesInRow: 1),
+        SkipReason.closeLoss,
+      );
+    });
+
+    test('a clear loss allows moving on only after three games', () {
+      expect(skipReason(mine: 10, theirs: 30, lossesInRow: 2), isNull);
+      expect(
+        skipReason(mine: 10, theirs: 30, lossesInRow: lossesBeforeSkip),
+        SkipReason.manyLosses,
+      );
+    });
+
+    test('a win needs no skip', () {
+      expect(skipReason(mine: 30, theirs: 10, lossesInRow: 5), isNull);
+    });
   });
 
   test('every level builds a connected board with valid presets', () {
@@ -52,7 +129,7 @@ void main() {
     state.play(0, first);
     expect(first.owner, 0);
     expect(state.current, 1);
-    expect(state.players[0].hand.length, handSize);
+    expect(state.players[0].hand.length, levels.first.handSize);
 
     final result = state.play(0, second);
     expect(result.points, 2);
@@ -106,7 +183,7 @@ void main() {
     final n = state.board.nodes;
     final path = [0, 1, 2, 3, 7, 6];
     for (var i = 0; i < 6; i++) {
-      state.players[state.current].hand[0] = WheelColor.values[i];
+      state.players[state.current].hand[0] = ColorWheel.classic.colors[i];
       state.play(0, n[path[i]]);
     }
     expect(

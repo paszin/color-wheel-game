@@ -1,27 +1,35 @@
 import 'package:flutter/painting.dart';
 
-/// The six colours of the painter's colour wheel, in wheel order.
+/// All colours of the painter's colour wheel, in wheel order: the six main
+/// colours and the six intermediate tones between them.
 ///
-/// Opposite colours (index distance 3) are complementary:
-/// yellow ↔ purple, orange ↔ blue, red ↔ green.
-/// The pigments are deliberately muted so they sit together like
-/// watercolour pans instead of pure screen colours.
+/// Opposite colours (index distance 6) are complementary, e.g.
+/// yellow ↔ purple, amber ↔ indigo. The pigments are
+/// deliberately muted so they sit together like watercolour pans instead of
+/// pure screen colours.
 enum WheelColor {
   yellow('Gelb', Color(0xFFE2B552)),
+  amber('Bernstein', Color(0xFFE09E4C)),
   orange('Orange', Color(0xFFDB8449)),
+  coral('Koralle', Color(0xFFD06B49)),
   red('Rot', Color(0xFFC2534D)),
+  magenta('Magenta', Color(0xFFA35473)),
   purple('Violett', Color(0xFF8A619D)),
+  indigo('Indigo', Color(0xFF6A6CA8)),
   blue('Blau', Color(0xFF4F7CAB)),
-  green('Grün', Color(0xFF6C9C6A));
+  turquoise('Türkis', Color(0xFF4F8E8C)),
+  green('Grün', Color(0xFF6C9C6A)),
+  lime('Limette', Color(0xFFA7AC58));
 
   const WheelColor(this.label, this.pigment);
 
   final String label;
   final Color pigment;
 
-  WheelColor shift(int steps) => values[(index + steps) % values.length];
-
-  WheelColor get complement => shift(values.length ~/ 2);
+  /// The opposite colour. It is the same on the six- and the twelve-colour
+  /// wheel, because the six main colours sit on every second place.
+  WheelColor get complement =>
+      values[(index + values.length ~/ 2) % values.length];
 
   bool isComplementOf(WheelColor other) => other == complement;
 
@@ -30,6 +38,38 @@ enum WheelColor {
 
   /// Lighter, more watery tone.
   Color get wash => _tone(pigment, lightness: 0.16, saturation: -0.08);
+}
+
+/// The colours a level plays with, in wheel order.
+class ColorWheel {
+  const ColorWheel._(this.colors, this.fullWheelBonus);
+
+  /// Six main colours: yellow, orange, red, purple, blue, green.
+  static const classic = ColorWheel._([
+    WheelColor.yellow,
+    WheelColor.orange,
+    WheelColor.red,
+    WheelColor.purple,
+    WheelColor.blue,
+    WheelColor.green,
+  ], 3);
+
+  /// All twelve colours including the intermediate tones.
+  static const extended = ColorWheel._(WheelColor.values, 6);
+
+  final List<WheelColor> colors;
+
+  /// Bonus for a sequence that contains every colour of this wheel.
+  final int fullWheelBonus;
+
+  int get length => colors.length;
+
+  /// Position of [c] on this wheel.
+  int indexOf(WheelColor c) => colors.indexOf(c);
+
+  /// The colour [steps] places further on this wheel, wrapping around.
+  WheelColor shift(WheelColor c, int steps) =>
+      colors[(indexOf(c) + steps) % length];
 }
 
 Color _tone(Color c, {double lightness = 0, double saturation = 0}) {

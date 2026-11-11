@@ -76,9 +76,12 @@ class ColorWheelGame extends FlameGame {
     // the scale.
     var margin = 24.0;
     var scale = 1.0;
+    // Large boards get relatively bigger fields so they stay easy to tap;
+    // rings (1.1 r) and tap areas (1.2 r) of neighbours still do not touch.
+    final fill = nodes.length > 30 ? 0.35 : 0.31;
     for (var i = 0; i < 2; i++) {
       scale = math.min((size.x - 2 * margin) / bw, (size.y - 2 * margin) / bh);
-      nodeRadius = math.min(minEdge * scale * 0.31, 44);
+      nodeRadius = math.min(minEdge * scale * fill, 44);
       margin = nodeRadius * 1.3 + 10;
     }
     final centre = Vector2(size.x / 2, size.y / 2);
@@ -354,7 +357,11 @@ class NodeComponent extends PositionComponent
     if (!showPointPreview) return;
     if (_previewColor != selected) {
       _previewColor = selected;
-      _previewPoints = evaluateMove(node, selected).points;
+      _previewPoints = evaluateMove(
+        node,
+        selected,
+        wheel: game.state.level.wheel,
+      ).points;
     }
     if (_previewPoints > 0) {
       _drawLabel(canvas, '+$_previewPoints', c, r * 0.9, Inks.ink);

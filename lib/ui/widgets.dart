@@ -80,39 +80,63 @@ class PaperScaffold extends StatelessWidget {
 
 /// The colour wheel as a horizontal watercolour gradient with labels.
 /// Marks [selected] and its complement when a card is picked.
+/// On the twelve-colour wheel only the main colours are labelled, or, with a
+/// card picked, the picked colour and its complement.
 class WheelStrip extends StatelessWidget {
-  const WheelStrip({super.key, this.selected});
+  const WheelStrip({super.key, this.selected, this.wheel = ColorWheel.classic});
 
   final WheelColor? selected;
+  final ColorWheel wheel;
 
   @override
   Widget build(BuildContext context) {
     final sel = selected;
     return Semantics(
       label:
-          'Farbkreis: Gelb, Orange, Rot, Violett, Blau, Grün, '
+          'Farbkreis: ${wheel.colors.map((c) => c.label).join(', ')}, '
           'dann wieder Gelb',
       child: LayoutBuilder(
         builder: (context, constraints) {
           final w = constraints.maxWidth;
           double centreOf(WheelColor c) =>
-              w * (c.index + 0.5) / WheelColor.values.length;
+              w * (wheel.indexOf(c) + 0.5) / wheel.length;
+          final crowded = wheel.length > ColorWheel.classic.length;
+          final labelled = [
+            for (final c in wheel.colors)
+              if (!crowded
+                  ? true
+                  : sel == null
+                  ? ColorWheel.classic.colors.contains(c)
+                  : c == sel || c == sel.complement)
+                c,
+          ];
           return SizedBox(
             height: 46,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Positioned(
+                Positioned(
                   left: 0,
                   right: 0,
                   top: 10,
                   height: 16,
-                  child: CustomPaint(painter: _WheelStripPainter()),
+                  child: CustomPaint(painter: _WheelStripPainter(wheel)),
                 ),
-                for (final c in WheelColor.values)
+                if (crowded)
+                  for (final c in wheel.colors)
+                    Positioned(
+                      left: centreOf(c) - 0.5,
+                      width: 1,
+                      top: 6,
+                      height: 4,
+                      child: ColoredBox(
+                        color: Inks.graphite.withValues(alpha: 0.5),
+                      ),
+                    ),
+                for (final c in labelled)
                   Positioned(
-                    left: centreOf(c) - 30,
-                    width: 60,
+                    left: centreOf(c) - 40,
+                    width: 80,
                     top: 27,
                     child: Text(
                       c.label,
@@ -164,14 +188,17 @@ class _StripMarker extends StatelessWidget {
 }
 
 class _WheelStripPainter extends CustomPainter {
-  const _WheelStripPainter();
+  const _WheelStripPainter(this.wheel);
+
+  final ColorWheel wheel;
 
   @override
   void paint(Canvas canvas, Size size) =>
-      Watercolor.wheelStrip(canvas, Offset.zero & size, 23);
+      Watercolor.wheelStrip(canvas, Offset.zero & size, 23, wheel: wheel);
 
   @override
-  bool shouldRepaint(_WheelStripPainter oldDelegate) => false;
+  bool shouldRepaint(_WheelStripPainter oldDelegate) =>
+      oldDelegate.wheel != wheel;
 }
 
 class PaintedDisc extends StatelessWidget {
@@ -327,16 +354,24 @@ class _ColorWheelEmblemState extends State<ColorWheelEmblem>
           final turn = _c.value * 2 * math.pi;
           return Stack(
             children: [
-              for (final color in WheelColor.values)
+              for (final color in ColorWheel.classic.colors)
                 Positioned(
                   left:
                       s / 2 +
-                      math.cos(turn - math.pi / 2 + color.index * math.pi / 3) *
+                      math.cos(
+                            turn -
+                                math.pi / 2 +
+                                ColorWheel.classic.indexOf(color) * math.pi / 3,
+                          ) *
                           (s / 2 - disc / 2) -
                       disc / 2,
                   top:
                       s / 2 +
-                      math.sin(turn - math.pi / 2 + color.index * math.pi / 3) *
+                      math.sin(
+                            turn -
+                                math.pi / 2 +
+                                ColorWheel.classic.indexOf(color) * math.pi / 3,
+                          ) *
                           (s / 2 - disc / 2) -
                       disc / 2,
                   child: PaintedDisc(

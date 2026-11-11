@@ -322,8 +322,13 @@ abstract final class Watercolor {
   /// The colour wheel unrolled into one brush stroke. Each colour sits in
   /// the middle of its sixth; both ends blend green into yellow, so the
   /// strip reads as a closed circle.
-  static void wheelStrip(Canvas canvas, Rect rect, int seed) {
-    final colours = WheelColor.values;
+  static void wheelStrip(
+    Canvas canvas,
+    Rect rect,
+    int seed, {
+    ColorWheel wheel = ColorWheel.classic,
+  }) {
+    final colours = wheel.colors;
     final wrap = Color.lerp(colours.last.pigment, colours.first.pigment, 0.5)!;
     final stops = <double>[0];
     final list = <Color>[wrap];
@@ -352,7 +357,10 @@ abstract final class Watercolor {
     final speck = Paint();
     for (var i = 0; i < rect.width ~/ 3; i++) {
       final t = rng.nextDouble();
-      final idx = ((t * colours.length) - 0.5).round().clamp(0, 5);
+      final idx = ((t * colours.length) - 0.5).round().clamp(
+        0,
+        colours.length - 1,
+      );
       speck.color = colours[idx].deep.withValues(
         alpha: 0.08 + rng.nextDouble() * 0.1,
       );
@@ -385,7 +393,7 @@ class DeskPainter extends CustomPainter {
       final rng = math.Random(17);
       c.drawRect(Offset.zero & size, Paint()..color = const Color(0xFFE3DDD2));
       for (var i = 0; i < 9; i++) {
-        final colour = WheelColor.values[i % 6];
+        final colour = ColorWheel.classic.colors[i % 6];
         final centre = Offset(
           rng.nextDouble() * size.width,
           rng.nextDouble() * size.height,

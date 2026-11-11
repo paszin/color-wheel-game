@@ -22,6 +22,7 @@ AiMove chooseAiMove(GameState state, double skill, Random rng) {
   final opp = 1 - me;
   final hand = state.players[me].hand;
   final oppHand = state.players[opp].hand.toSet();
+  final wheel = state.level.wheel;
 
   AiMove? best;
   var bestValue = double.negativeInfinity;
@@ -30,11 +31,11 @@ AiMove chooseAiMove(GameState state, double skill, Random rng) {
   for (var i = 0; i < hand.length; i++) {
     if (!triedColours.add(hand[i])) continue;
     for (final node in state.board.empty) {
-      final result = evaluateMove(node, hand[i]);
+      final result = evaluateMove(node, hand[i], wheel: wheel);
       var value = result.points + _ownershipGain(result, me, opp);
       if (skill >= 0.5) {
         value -=
-            _threat(node, hand[i], result.secures, me, opp, oppHand) *
+            _threat(node, hand[i], result.secures, me, opp, oppHand, wheel) *
             skill *
             0.7;
       }
@@ -71,6 +72,7 @@ double _threat(
   int me,
   int opp,
   Set<WheelColor> oppHand,
+  ColorWheel wheel,
 ) {
   node.color = color;
   node.owner = me;
@@ -80,7 +82,7 @@ double _threat(
     for (final m in node.neighbors) {
       if (!m.isEmpty) continue;
       for (final c in oppHand) {
-        final r = evaluateMove(m, c);
+        final r = evaluateMove(m, c, wheel: wheel);
         if (r.points == 0) continue;
         final v = r.points + _ownershipGain(r, opp, me);
         if (v > worst) worst = v;

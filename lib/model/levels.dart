@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show Offset;
 
+import '../logic/deck.dart';
 import '../theme/palette.dart';
 import 'board.dart';
 
@@ -11,6 +12,8 @@ class Level {
     required this.subtitle,
     required this.aiSkill,
     required this.build,
+    this.wheel = ColorWheel.classic,
+    this.handSize = defaultHandSize,
   });
 
   final int number;
@@ -20,6 +23,12 @@ class Level {
   /// 0 = careless, 1 = plays the best move it finds.
   final double aiSkill;
   final BoardSpec Function() build;
+
+  /// Colours dealt and scored on this level.
+  final ColorWheel wheel;
+
+  /// Cards each player holds.
+  final int handSize;
 }
 
 const _y = WheelColor.yellow;
@@ -28,6 +37,12 @@ const _r = WheelColor.red;
 const _p = WheelColor.purple;
 const _b = WheelColor.blue;
 const _g = WheelColor.green;
+const _am = WheelColor.amber;
+const _co = WheelColor.coral;
+const _ma = WheelColor.magenta;
+const _in = WheelColor.indigo;
+const _tu = WheelColor.turquoise;
+const _li = WheelColor.lime;
 
 final levels = <Level>[
   Level(
@@ -88,9 +103,40 @@ final levels = <Level>[
   Level(
     number: 8,
     name: 'Pinselstrich',
-    subtitle: 'Das große Finale',
+    subtitle: 'Versetzte Reihen, viel Platz',
     aiSkill: 0.9,
     build: () => staggered(4, 7, preset: {1: _b, 9: _r, 18: _y, 26: _g}),
+  ),
+  Level(
+    number: 9,
+    name: 'Farbrad',
+    subtitle: 'Zwölf Farben, vier Karten auf der Hand',
+    aiSkill: 0.9,
+    wheel: ColorWheel.extended,
+    handSize: 4,
+    build: () => colorWheelBoard(preset: {0: _o, 7: _tu, 13: _ma, 25: _li}),
+  ),
+  Level(
+    number: 10,
+    name: 'Bienenstock',
+    subtitle: 'Große Waben voller Zwischentöne',
+    aiSkill: 0.93,
+    wheel: ColorWheel.extended,
+    handSize: 4,
+    build: () => hexagon(3, preset: {3: _am, 15: _b, 21: _co, 33: _in}),
+  ),
+  Level(
+    number: 11,
+    name: 'Meisterstück',
+    subtitle: 'Das große Finale',
+    aiSkill: 0.96,
+    wheel: ColorWheel.extended,
+    handSize: 4,
+    build: () => staggered(
+      6,
+      9,
+      preset: {2: _am, 10: _tu, 19: _r, 28: _li, 39: _in, 50: _co},
+    ),
   ),
 ];
 
@@ -232,6 +278,31 @@ BoardSpec mandala({Map<int, WheelColor> preset = const {}}) {
         (inner(i + 1), outer(2 * i + 1)),
       ],
       for (var j = 0; j < 12; j++) (outer(j), outer(j + 1)),
+    ],
+    preset: preset,
+  );
+}
+
+/// Centre, ring of 6 and two rings of 12 (31 fields). Each ring of 12 can
+/// hold the whole twelve-colour wheel.
+BoardSpec colorWheelBoard({Map<int, WheelColor> preset = const {}}) {
+  final base = mandala();
+  final positions = [...base.positions];
+  for (var j = 0; j < 12; j++) {
+    final a = -math.pi / 2 + (j + 0.5) * math.pi / 6;
+    positions.add(Offset(math.cos(a), math.sin(a)) * 3);
+  }
+  int middle(int j) => 7 + j % 12;
+  int outer(int j) => 19 + j % 12;
+  return BoardSpec(
+    positions: positions,
+    edges: [
+      ...base.edges,
+      for (var j = 0; j < 12; j++) ...[
+        (outer(j), outer(j + 1)),
+        (middle(j), outer(j)),
+        (middle(j + 1), outer(j)),
+      ],
     ],
     preset: preset,
   );

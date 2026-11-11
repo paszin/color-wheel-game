@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../game/color_wheel_game.dart';
+import '../logic/advance.dart';
 import '../logic/ai.dart';
 import '../logic/difficulty.dart';
 import '../logic/game_state.dart';
@@ -41,6 +42,12 @@ class _GameScreenState extends State<GameScreen> {
   bool _showResult = false;
   Timer? _timer;
 
+  /// Best own total on this level before the finished game (vs computer).
+  int? _previousBest;
+
+  /// Set when a lost game still lets the player open the next level.
+  SkipReason? _skip;
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +60,8 @@ class _GameScreenState extends State<GameScreen> {
     _game = ColorWheelGame(state: _state, onNodeTap: _onNodeTap);
     _selected = null;
     _showResult = false;
+    _previousBest = null;
+    _skip = null;
     _syncGame();
   }
 
@@ -129,12 +138,34 @@ class _GameScreenState extends State<GameScreen> {
     _play(move.handIndex, move.node);
   }
 
-  void _finish() {
+  Future<void> _finish() async {
     if (!mounted) return;
-    if (widget.mode == GameMode.vsComputer && _state.winner == 0) {
-      Progress.unlock(widget.level.number + 1);
+    final state = _state;
+    if (widget.mode == GameMode.vsComputer) {
+      final level = widget.level.number;
+      final mine = state.total(0), theirs = state.total(1);
+      final won = state.winner == 0;
+      final previousBest = await Progress.best(level);
+      await Progress.submitBest(level, mine);
+      final losses = await Progress.recordResult(level, won: won);
+      if (won) await Progress.unlock(level + 1);
+      if (!mounted || !identical(state, _state)) return;
+      _previousBest = previousBest;
+      _skip = won
+          ? null
+          : skipReason(mine: mine, theirs: theirs, lossesInRow: losses);
     }
     setState(() => _showResult = true);
+  }
+
+  bool get _hasNextLevel =>
+      widget.mode == GameMode.vsComputer &&
+      widget.level.number < levels.length &&
+      (_state.winner == 0 || _skip != null);
+
+  Future<void> _skipToNext() async {
+    await Progress.unlock(widget.level.number + 1);
+    if (mounted) _nextLevel();
   }
 
   void _restart() => setState(_newGame);
@@ -194,32 +225,27 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
               Expanded(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: GameWidget(key: ObjectKey(_game), game: _game),
-                    ),
-                    if (_canLetComputerStart)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: BrushButton(
-                            label: 'Computer fängt an',
-                            onPressed: _letComputerStart,
-                            color: WheelColor.purple,
-                            seed: 11,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                child: GameWidget(key: ObjectKey(_game), game: _game),
               ),
-              Text(
-                _status,
-                textAlign: TextAlign.center,
-                style: AppText.hand(22, color: Inks.graphite),
+              // Before the first move the button takes the status line's
+              // place, so it never covers a field of a large board.
+              SizedBox(
+                height: 44,
+                child: Center(
+                  child: _canLetComputerStart && _selected == null
+                      ? BrushButton(
+                          label: 'Computer fängt an',
+                          onPressed: _letComputerStart,
+                          color: WheelColor.purple,
+                          seed: 11,
+                          fontSize: 20,
+                        )
+                      : Text(
+                          _status,
+                          textAlign: TextAlign.center,
+                          style: AppText.hand(22, color: Inks.graphite),
+                        ),
+                ),
               ),
               const SizedBox(height: 4),
               _HandRow(
@@ -231,7 +257,10 @@ class _GameScreenState extends State<GameScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
-                child: WheelStrip(selected: _game.selectedColor),
+                child: WheelStrip(
+                  selected: _game.selectedColor,
+                  wheel: widget.level.wheel,
+                ),
               ),
             ],
           ),
@@ -239,13 +268,14 @@ class _GameScreenState extends State<GameScreen> {
             Positioned.fill(
               child: _ResultOverlay(
                 state: _state,
+                previousBest: _previousBest,
+                skip: _skip,
                 onRestart: _restart,
-                onNext:
-                    widget.mode == GameMode.vsComputer &&
-                        _state.winner == 0 &&
-                        widget.level.number < levels.length
+                onNext: !_hasNextLevel
+                    ? null
+                    : _state.winner == 0
                     ? _nextLevel
-                    : null,
+                    : _skipToNext,
                 onLevels: () => Navigator.of(context).pop(),
               ),
             ),
@@ -422,7 +452,7 @@ class _HandRow extends StatelessWidget {
   final bool enabled;
   final ValueChanged<int> onSelect;
 
-  static const _tilt = [-0.06, 0.015, 0.07];
+  static const _tilt = [-0.06, 0.015, 0.07, -0.03];
 
   @override
   Widget build(BuildContext context) {
@@ -433,8 +463,11 @@ class _HandRow extends StatelessWidget {
         children: [
           for (var i = 0; i < hand.length; i++)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: hand.length > 3 ? 5 : 8,
+              ),
               child: _HandCard(
+                compact: hand.length > 3,
                 key: ValueKey('slot$i'),
                 color: hand[i],
                 seed: i * 17 + hand[i].index,
@@ -461,8 +494,11 @@ class _HandCard extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onTap,
+    this.compact = false,
   });
 
+  /// Narrower card so four fit next to each other on a phone.
+  final bool compact;
   final WheelColor color;
   final int seed;
   final double tilt;
@@ -492,7 +528,7 @@ class _HandCard extends StatelessWidget {
                 angle: selected ? 0 : tilt,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
-                  width: 88,
+                  width: compact ? 76 : 88,
                   height: 118,
                   decoration: BoxDecoration(
                     color: Inks.paper,
@@ -528,12 +564,18 @@ class _HandCard extends StatelessWidget {
                         child: PaintedDisc(
                           key: ValueKey(color),
                           color: color,
-                          size: 66,
+                          size: compact ? 58 : 66,
                           seed: seed,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(color.label, style: AppText.hand(20)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(color.label, style: AppText.hand(20)),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -549,12 +591,16 @@ class _HandCard extends StatelessWidget {
 class _ResultOverlay extends StatelessWidget {
   const _ResultOverlay({
     required this.state,
+    required this.previousBest,
+    required this.skip,
     required this.onRestart,
     required this.onNext,
     required this.onLevels,
   });
 
   final GameState state;
+  final int? previousBest;
+  final SkipReason? skip;
   final VoidCallback onRestart;
   final VoidCallback? onNext;
   final VoidCallback onLevels;
@@ -563,14 +609,36 @@ class _ResultOverlay extends StatelessWidget {
     final w = state.winner;
     if (w == null) return 'Unentschieden';
     if (state.mode == GameMode.vsComputer) {
-      return w == 0 ? 'Gewonnen!' : 'Knapp daneben';
+      if (w == 0) return 'Gewonnen!';
+      return isCloseLoss(state.total(0), state.total(1))
+          ? 'Knapp daneben'
+          : 'Verloren';
     }
     return '${state.players[w].name} gewinnt!';
   }
 
+  /// Own total compared with the best total before this game.
+  String? get _bestLine {
+    if (state.mode != GameMode.vsComputer) return null;
+    final mine = state.total(0);
+    final best = previousBest;
+    if (best == null) return 'Dein erster Bestwert: $mine';
+    if (mine > best) return 'Neuer Bestwert! Bisher: $best';
+    return 'Dein Bestwert: $best';
+  }
+
+  String? get _skipLine => switch (skip) {
+    SkipReason.closeLoss => 'Knapp verloren – du darfst trotzdem weiter.',
+    SkipReason.manyLosses =>
+      'Drei Partien ohne Sieg – du darfst trotzdem weiter.',
+    null => null,
+  };
+
   @override
   Widget build(BuildContext context) {
     final w = state.winner;
+    final bestLine = _bestLine;
+    final skipLine = onNext == null || w == 0 ? null : _skipLine;
     final accent = w == null
         ? WheelColor.yellow
         : (w == 0 ? WheelColor.blue : WheelColor.orange);
@@ -662,10 +730,26 @@ class _ResultOverlay extends StatelessWidget {
                     _row('Gesamt', state.total, strong: true),
                   ],
                 ),
+                if (bestLine != null) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    bestLine,
+                    textAlign: TextAlign.center,
+                    style: AppText.hand(21, color: Inks.ink),
+                  ),
+                ],
+                if (skipLine != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    skipLine,
+                    textAlign: TextAlign.center,
+                    style: AppText.body(14, color: Inks.graphite),
+                  ),
+                ],
                 const SizedBox(height: 22),
                 if (onNext != null) ...[
                   BrushButton(
-                    label: 'Nächstes Level',
+                    label: w == 0 ? 'Nächstes Level' : 'Trotzdem weiter',
                     color: WheelColor.green,
                     seed: 31,
                     fontSize: 26,

@@ -46,7 +46,6 @@ class MoveResult {
 const sameColorPoints = 1;
 const complementPoints = 2;
 const minSequenceLength = 3;
-const fullWheelBonus = 3;
 
 /// Upper bound for enumerated chain paths per direction, so a dense board
 /// can never stall a move.
@@ -59,10 +58,14 @@ const _pathLimit = 4000;
 /// * The longest chain of neighbouring cards through [node] that follows the
 ///   colour wheel step by step (either direction, wrapping from green back to
 ///   yellow) scores its length, if it is at least 3 long. A chain that
-///   contains all six colours earns a bonus.
+///   contains every colour of [wheel] earns [ColorWheel.fullWheelBonus].
 /// * A sequence never runs along the links of an earlier full wheel
 ///   ([ColorNode.spentLinks]), so a closed wheel cannot be scored again.
-MoveResult evaluateMove(ColorNode node, WheelColor color) {
+MoveResult evaluateMove(
+  ColorNode node,
+  WheelColor color, {
+  ColorWheel wheel = ColorWheel.classic,
+}) {
   WheelColor? colorOf(ColorNode n) => identical(n, node) ? color : n.color;
 
   final events = <ScoreEvent>[];
@@ -76,12 +79,12 @@ MoveResult evaluateMove(ColorNode node, WheelColor color) {
     }
   }
 
-  final chain = longestChainThrough(node, colorOf);
+  final chain = longestChainThrough(node, colorOf, wheel: wheel);
   if (chain.length >= minSequenceLength) {
     events.add(ScoreEvent(ScoreKind.sequence, chain, chain.length));
     final colours = {for (final n in chain) colorOf(n)};
-    if (colours.length == WheelColor.values.length) {
-      events.add(ScoreEvent(ScoreKind.fullWheel, chain, fullWheelBonus));
+    if (colours.length == wheel.length) {
+      events.add(ScoreEvent(ScoreKind.fullWheel, chain, wheel.fullWheelBonus));
     }
   }
   return MoveResult(node, color, events);
@@ -92,13 +95,14 @@ MoveResult evaluateMove(ColorNode node, WheelColor color) {
 /// direction, so one direction covers both.
 List<ColorNode> longestChainThrough(
   ColorNode start,
-  WheelColor? Function(ColorNode) colorOf,
-) {
+  WheelColor? Function(ColorNode) colorOf, {
+  ColorWheel wheel = ColorWheel.classic,
+}) {
   final startColor = colorOf(start);
   if (startColor == null) return [start];
 
-  final forward = _paths(start, startColor, 1, colorOf);
-  final backward = _paths(start, startColor, -1, colorOf);
+  final forward = _paths(start, startColor, 1, colorOf, wheel);
+  final backward = _paths(start, startColor, -1, colorOf, wheel);
   // Longest first, so the search can stop at the first disjoint pair that
   // cannot be beaten.
   forward.sort((a, b) => b.length.compareTo(a.length));
@@ -120,12 +124,13 @@ List<ColorNode> longestChainThrough(
 }
 
 /// All simple paths leaving [start] (excluding it) where each card is
-/// [step] wheel positions after the previous one. Includes the empty path.
+/// [step] positions on [wheel] after the previous one. Includes the empty path.
 List<List<ColorNode>> _paths(
   ColorNode start,
   WheelColor startColor,
   int step,
   WheelColor? Function(ColorNode) colorOf,
+  ColorWheel wheel,
 ) {
   final out = <List<ColorNode>>[];
   final path = <ColorNode>[];
@@ -134,7 +139,7 @@ List<List<ColorNode>> _paths(
   void walk(ColorNode cur, WheelColor curColor) {
     out.add(List.of(path));
     if (out.length >= _pathLimit) return;
-    final want = curColor.shift(step);
+    final want = wheel.shift(curColor, step);
     for (final n in cur.neighbors) {
       if (visited.contains(n) || colorOf(n) != want) continue;
       if (cur.spentLinks.contains(n)) continue;

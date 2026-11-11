@@ -30,8 +30,17 @@ void main() {
     expect(y.complement, p);
     expect(o.complement, b);
     expect(r.complement, g);
-    expect(g.shift(1), y);
-    expect(y.shift(-1), g);
+    expect(ColorWheel.classic.shift(g, 1), y);
+    expect(ColorWheel.classic.shift(y, -1), g);
+  });
+
+  test('complements are the same on the twelve-colour wheel', () {
+    expect(y.complement, p);
+    expect(WheelColor.amber.complement, WheelColor.indigo);
+    expect(WheelColor.turquoise.complement, WheelColor.coral);
+    for (final c in WheelColor.values) {
+      expect(c.complement.complement, c);
+    }
   });
 
   test('same colour neighbour scores 1 and claims both fields', () {
@@ -87,7 +96,44 @@ void main() {
     final board = line([y, o, r, p, b, null]);
     final m = evaluateMove(board.nodes[5], g);
     expect(pointsOf(m, ScoreKind.sequence), 6);
-    expect(pointsOf(m, ScoreKind.fullWheel), fullWheelBonus);
+    expect(pointsOf(m, ScoreKind.fullWheel), ColorWheel.classic.fullWheelBonus);
+  });
+
+  group('twelve-colour wheel', () {
+    const wheel = ColorWheel.extended;
+
+    test('a sequence steps through the intermediate tone', () {
+      final board = line([y, WheelColor.amber, null]);
+      final m = evaluateMove(board.nodes[2], o, wheel: wheel);
+      expect(pointsOf(m, ScoreKind.sequence), 3);
+    });
+
+    test('main colours alone are no sequence', () {
+      final board = line([y, o, null]);
+      final m = evaluateMove(board.nodes[2], r, wheel: wheel);
+      expect(pointsOf(m, ScoreKind.sequence), 0);
+    });
+
+    test('sequence wraps from lime to yellow', () {
+      final board = line([g, WheelColor.lime, null]);
+      final m = evaluateMove(board.nodes[2], y, wheel: wheel);
+      expect(pointsOf(m, ScoreKind.sequence), 3);
+    });
+
+    test('all twelve colours earn the bigger bonus, six do not', () {
+      final board = line([...WheelColor.values.take(11), null]);
+      final m = evaluateMove(board.nodes[11], WheelColor.lime, wheel: wheel);
+      expect(pointsOf(m, ScoreKind.sequence), 12);
+      expect(pointsOf(m, ScoreKind.fullWheel), 6);
+
+      final half = line([...WheelColor.values.take(5), null]);
+      final short = evaluateMove(
+        half.nodes[5],
+        WheelColor.magenta,
+        wheel: wheel,
+      );
+      expect(pointsOf(short, ScoreKind.fullWheel), 0);
+    });
   });
 
   test('only the longest chain through the new card counts', () {

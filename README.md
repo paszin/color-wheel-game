@@ -33,6 +33,14 @@ Gewertet wird die längste Farbfolge durch die neue Karte.
 
 **Spielende:** Sind alle Felder bemalt, zählt **Punkte + eigene Felder**. Wer mehr hat, gewinnt.
 
+**Zwischentöne (ab Level 9):** Zwischen je zwei Farben liegt ein Zwischenton. Der Farbkreis hat dann zwölf Farben: Gelb → **Bernstein** → Orange → **Koralle** → Rot → **Magenta** → Violett → **Indigo** → Blau → **Türkis** → Grün → **Limette**. Jeder hält vier Karten statt drei. Eine Farbfolge geht in Schritten zum nächsten Ton, also Gelb → Bernstein → Orange. Komplementär ist weiterhin die gegenüberliegende Farbe, sechs Schritte weiter, etwa Bernstein–Indigo, Koralle–Türkis, Magenta–Limette. Ein voller Farbkreis braucht alle zwölf Farben und bringt +6 Bonus.
+
+**Weiterkommen ohne Sieg:** Gegen den Computer schaltet ein Sieg das nächste Level frei. Nach einer Niederlage gibt es trotzdem den Button „Trotzdem weiter“, wenn
+- die Niederlage knapp war: höchstens 10 % der Gesamtpunkte des Siegers Abstand, mindestens aber 3 Punkte (ein Unentschieden zählt als knapp), oder
+- das Level dreimal in Folge nicht gewonnen wurde.
+
+**Bestwert:** Je Level speichert das Spiel deinen besten Gesamtstand gegen den Computer. Am Ende einer Partie steht er zum Vergleich unter dem Ergebnis.
+
 **Nachziehen:** Farben, die schon auf der Hand sind, kommen seltener nach (Gewicht 1 / (1 + 3 · Anzahl)). So hat man selten zweimal dieselbe Farbe.
 
 **Punktevorschau:** Mit dem URL-Parameter `?punkte` zeigt das Spiel beim Überfahren eines Felds an, wie viele Punkte die gewählte Karte dort bringen würde: https://paszin.github.io/color-wheel-game/?punkte. Ohne den Parameter bleibt das verborgen.
@@ -43,7 +51,7 @@ Gewertet wird die längste Farbfolge durch die neue Karte.
   <img src="docs/screenshots/levels.jpg" width="250" alt="Levelauswahl mit Schwierigkeit Leicht, Mittel, Schwer und acht Spielbrettern">
 </p>
 
-- **Gegen den Computer:** acht Level. Jeder Sieg schaltet das nächste frei. Der Computer lässt sich auf **Leicht**, **Mittel** oder **Schwer** stellen. Vor dem ersten Zug kannst du mit „Computer fängt an“ den Computer beginnen lassen. Auf Mittel wird er von Level zu Level stärker, auf Schwer spielt er überall fast optimal und blockiert Felder, auf denen du sofort punkten könntest.
+- **Gegen den Computer:** elf Level. Jeder Sieg schaltet das nächste frei, eine knappe Niederlage oder drei Partien ohne Sieg ebenfalls. Der Computer lässt sich auf **Leicht**, **Mittel** oder **Schwer** stellen. Vor dem ersten Zug kannst du mit „Computer fängt an“ den Computer beginnen lassen. Auf Mittel wird er von Level zu Level stärker, auf Schwer spielt er überall fast optimal und blockiert Felder, auf denen du sofort punkten könntest.
 - **Zwei Spieler:** abwechselnd am selben Gerät, alle Level frei wählbar.
 
 | # | Brett | Besonderheit |
@@ -56,12 +64,15 @@ Gewertet wird die längste Farbfolge durch die neue Karte.
 | 6 | Mandala | Zentrum mit zwei Ringen |
 | 7 | Mosaik | Raster mit diagonalen Nachbarn |
 | 8 | Pinselstrich | großes Brett mit versetzten Reihen |
+| 9 | Farbrad | 12 Farben, 4 Karten; Zentrum, Ring aus 6 und zwei Ringe aus 12 (31 Felder) |
+| 10 | Bienenstock | 12 Farben, 4 Karten; große Waben (37 Felder) |
+| 11 | Meisterstück | 12 Farben, 4 Karten; 6 × 9 versetzte Reihen (54 Felder) |
 
 Ab Level 4 liegen einzelne neutrale Karten schon zu Beginn auf dem Brett.
 
 ## Gestaltung
 
-Die Grafik im Spiel wird beim Zeichnen aus Code erzeugt, ohne Bilddateien. Jede Farbfläche besteht aus mehreren durchscheinenden Lasuren mit unregelmäßigem Rand, dunklerem Pigment am Rand, Nass-in-Nass-Flecken und Granulation. Dazu kommen ein Papiergrund mit Fasern und Bleistiftlinien für die Verbindungen. Die sechs Farben sind gedämpfte Pigmenttöne statt reiner Bildschirmfarben.
+Die Grafik im Spiel wird beim Zeichnen aus Code erzeugt, ohne Bilddateien. Jede Farbfläche besteht aus mehreren durchscheinenden Lasuren mit unregelmäßigem Rand, dunklerem Pigment am Rand, Nass-in-Nass-Flecken und Granulation. Dazu kommen ein Papiergrund mit Fasern und Bleistiftlinien für die Verbindungen. Die Farben sind gedämpfte Pigmenttöne statt reiner Bildschirmfarben.
 
 Unten im Spiel zeigt ein Farbstreifen die Reihenfolge des Farbkreises. Ist eine Karte gewählt, markiert er ihre Farbe und die Komplementärfarbe.
 
@@ -78,7 +89,7 @@ Voraussetzung ist Flutter 3.47 (Dart 3.13).
 ```bash
 flutter pub get
 flutter run -d chrome          # im Browser starten, mit Hot Reload
-flutter test                   # Wertung, Kartenziehen, Computergegner, Schwierigkeit
+flutter test                   # Wertung, Kartenziehen, Computergegner, Schwierigkeit, Fortschritt
 flutter build web --release    # Ergebnis in build/web
 ```
 
@@ -87,10 +98,13 @@ flutter build web --release    # Ergebnis in build/web
 | Pfad | Inhalt |
 |---|---|
 | `lib/model/board.dart` | Spielbrett als Graph: Felder mit Farbe, Besitzer und Nachbarn |
-| `lib/model/levels.dart` | die acht Bretter (Raster, Ringe, Sechseckgitter, …) |
+| `lib/model/levels.dart` | die elf Bretter (Raster, Ringe, Sechseckgitter, …) mit Farbkreis und Handgröße |
 | `lib/logic/scoring.dart` | Wertung eines Zugs, inklusive Suche nach der längsten Farbfolge |
 | `lib/logic/game_state.dart` | Spielablauf: Züge, Übernehmen, Hand, Endstand |
 | `lib/logic/ai.dart`, `difficulty.dart` | Computergegner und Schwierigkeitsstufen |
+| `lib/logic/advance.dart` | wann man ohne Sieg weiter darf |
+| `lib/logic/progress.dart` | gespeicherter Fortschritt, Niederlagen in Folge, Bestwert je Level |
+| `lib/theme/palette.dart` | die zwölf Farben und die Farbkreise mit 6 und 12 Farben |
 | `lib/painting/watercolor.dart` | Aquarell-Rendering: Farbflächen, Papier, Bleistift, Pinselstriche |
 | `lib/game/color_wheel_game.dart` | Flame-Darstellung des Bretts mit Animationen |
 | `lib/ui/` | Screens: Menü, Levelauswahl, Spiel, Regeln |

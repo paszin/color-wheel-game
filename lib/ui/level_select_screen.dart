@@ -141,7 +141,7 @@ class _LevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tint = WheelColor.values[(level.number - 1) % 6];
+    final tint = ColorWheel.classic.colors[(level.number - 1) % 6];
     return Semantics(
       button: open,
       label: 'Level ${level.number}: ${level.name}${open ? '' : ', gesperrt'}',

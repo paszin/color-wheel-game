@@ -27,12 +27,12 @@ class GameState extends ChangeNotifier {
       PlayerState(
         mode == GameMode.vsComputer ? 'Du' : 'Spieler 1',
         isComputer: false,
-        hand: dealHand(this.rng),
+        hand: dealHand(this.rng, wheel: level.wheel, size: level.handSize),
       ),
       PlayerState(
         mode == GameMode.vsComputer ? 'Computer' : 'Spieler 2',
         isComputer: mode == GameMode.vsComputer,
-        hand: dealHand(this.rng),
+        hand: dealHand(this.rng, wheel: level.wheel, size: level.handSize),
       ),
     ];
   }
@@ -82,7 +82,7 @@ class GameState extends ChangeNotifier {
     final player = currentPlayer;
     final color = player.hand[handIndex];
 
-    final result = evaluateMove(node, color);
+    final result = evaluateMove(node, color, wheel: level.wheel);
     node.color = color;
     for (final n in result.claimed) {
       n.owner = current;
@@ -98,7 +98,7 @@ class GameState extends ChangeNotifier {
     }
     player.points += result.points;
     final rest = [...player.hand]..removeAt(handIndex);
-    player.hand[handIndex] = drawCard(rest, rng);
+    player.hand[handIndex] = drawCard(rest, rng, wheel: level.wheel);
     lastMove = result;
     if (!isOver) current = 1 - current;
     notifyListeners();
