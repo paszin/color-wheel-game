@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import '../model/board.dart';
 import '../theme/palette.dart';
+import 'scoring.dart';
 
 /// Cards in hand on the six-colour levels; a level can ask for more.
 const defaultHandSize = 3;
@@ -35,4 +37,32 @@ List<WheelColor> dealHand(
     hand.add(drawCard(hand, rng, wheel: wheel));
   }
   return hand;
+}
+
+/// The colour that scores most on [board] right now, for the happy
+/// difficulty. Colours already in [hand] count less, so the player gets
+/// chances for several fields. Falls back to [drawCard] while no colour can
+/// score anywhere, e.g. on an empty board.
+WheelColor goodCard(
+  Board board,
+  List<WheelColor> hand,
+  Random rng, {
+  ColorWheel wheel = ColorWheel.classic,
+}) {
+  WheelColor? best;
+  var bestValue = 0.0;
+  for (final c in wheel.colors) {
+    var points = 0;
+    for (final node in board.empty) {
+      points = max(points, evaluateMove(node, c, wheel: wheel).points);
+    }
+    if (points == 0) continue;
+    final value =
+        points - 2.0 * hand.where((h) => h == c).length + rng.nextDouble();
+    if (value > bestValue) {
+      bestValue = value;
+      best = c;
+    }
+  }
+  return best ?? drawCard(hand, rng, wheel: wheel);
 }

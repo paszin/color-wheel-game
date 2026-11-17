@@ -51,7 +51,7 @@ Gewertet wird die längste Farbfolge durch die neue Karte.
   <img src="docs/screenshots/levels.jpg" width="250" alt="Levelauswahl mit Schwierigkeit Leicht, Mittel, Schwer und acht Spielbrettern">
 </p>
 
-- **Gegen den Computer:** elf Level. Jeder Sieg schaltet das nächste frei, eine knappe Niederlage oder drei Partien ohne Sieg ebenfalls. Der Computer lässt sich auf **Leicht**, **Mittel** oder **Schwer** stellen. Vor dem ersten Zug kannst du mit „Computer fängt an“ den Computer beginnen lassen. Auf Mittel wird er von Level zu Level stärker, auf Schwer spielt er überall fast optimal und blockiert Felder, auf denen du sofort punkten könntest.
+- **Gegen den Computer:** elf Level. Jeder Sieg schaltet das nächste frei, eine knappe Niederlage oder drei Partien ohne Sieg ebenfalls. Der Computer lässt sich auf **Lucky you**, **Leicht**, **Mittel** oder **Schwer** stellen. Vor dem ersten Zug kannst du mit „Computer fängt an“ den Computer beginnen lassen. Auf Mittel wird er von Level zu Level stärker, auf Schwer spielt er überall fast optimal und blockiert Felder, auf denen du sofort punkten könntest. Auf Lucky you gewinnst du immer: Du bekommst Karten, mit denen du punkten kannst, der Computer legt dir Vorlagen und punktet nur, solange er hinter dir bleibt. Seine Karten ohne Punkte bleiben neutral, und Karten von dir nimmt er nie.
 - **Zwei Spieler:** abwechselnd am selben Gerät, alle Level frei wählbar.
 
 | # | Brett | Besonderheit |

@@ -60,7 +60,11 @@ class _GameScreenState extends State<GameScreen> {
 
   void _newGame() {
     _timer?.cancel();
-    _state = GameState(widget.level, widget.mode);
+    _state = GameState(
+      widget.level,
+      widget.mode,
+      happy: widget.mode == GameMode.vsComputer && widget.difficulty.isHappy,
+    );
     _game = ColorWheelGame(state: _state, onNodeTap: _onNodeTap);
     _clearInspected();
     _selected = null;
@@ -165,11 +169,9 @@ class _GameScreenState extends State<GameScreen> {
 
   void _computerTurn() {
     if (!mounted || _state.isOver) return;
-    final move = chooseAiMove(
-      _state,
-      widget.difficulty.skillFor(widget.level),
-      _rng,
-    );
+    final move = widget.difficulty.isHappy
+        ? chooseHappyMove(_state, _rng)
+        : chooseAiMove(_state, widget.difficulty.skillFor(widget.level), _rng);
     _play(move.handIndex, move.node);
   }
 

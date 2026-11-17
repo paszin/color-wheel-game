@@ -282,7 +282,7 @@ class _BoardPreviewPainter extends CustomPainter {
   bool shouldRepaint(_BoardPreviewPainter old) => old.level != level;
 }
 
-/// Leicht / Mittel / Schwer as three labels; the chosen one sits on a brush
+/// Lucky you / Leicht / Mittel / Schwer as four labels; the chosen one sits on a brush
 /// stroke in its colour.
 class DifficultyPicker extends StatelessWidget {
   const DifficultyPicker({
@@ -302,6 +302,8 @@ class DifficultyPicker extends StatelessWidget {
         const SizedBox(width: 6),
         for (final d in Difficulty.values)
           Expanded(
+            // "Lucky you" is longer than the other labels.
+            flex: d.isHappy ? 4 : 3,
             child: Semantics(
               button: true,
               selected: d == value,
@@ -321,16 +323,20 @@ class DifficultyPicker extends StatelessWidget {
                         opacity: d == value ? 0.85 : 0,
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(
-                          d.label,
-                          textAlign: TextAlign.center,
-                          style: AppText.hand(
-                            22,
-                            color: d == value ? Inks.ink : Inks.graphite,
-                            weight: d == value
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            d.label,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            style: AppText.hand(
+                              22,
+                              color: d == value ? Inks.ink : Inks.graphite,
+                              weight: d == value
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),

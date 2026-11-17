@@ -95,3 +95,36 @@ double _threat(
   }
   return worst;
 }
+
+/// Friendly computer for the happy difficulty. [GameState.happy] already
+/// makes sure it stays behind; here it only chooses which chance to lay out.
+/// It prefers cards the player can score against next turn and scores
+/// itself where the rules let it.
+AiMove chooseHappyMove(GameState state, Random rng) {
+  final me = state.current;
+  final opp = 1 - me;
+  final hand = state.players[me].hand;
+  final oppHand = state.players[opp].hand.toSet();
+  final wheel = state.level.wheel;
+
+  AiMove? best;
+  var bestValue = double.negativeInfinity;
+  final triedColours = <WheelColor>{};
+
+  for (var i = 0; i < hand.length; i++) {
+    if (!triedColours.add(hand[i])) continue;
+    for (final node in state.board.empty) {
+      final result = evaluateMove(node, hand[i], wheel: wheel);
+      final scores = result.secures && !state.holdsBack(result);
+      final value =
+          _threat(node, hand[i], scores, me, opp, oppHand, wheel) +
+          (scores ? 2 : 0) +
+          rng.nextDouble() * 2;
+      if (value > bestValue) {
+        bestValue = value;
+        best = AiMove(i, node);
+      }
+    }
+  }
+  return best!;
+}

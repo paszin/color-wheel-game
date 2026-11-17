@@ -20,7 +20,7 @@ class PlayerState {
 }
 
 class GameState extends ChangeNotifier {
-  GameState(this.level, this.mode, {Random? rng})
+  GameState(this.level, this.mode, {Random? rng, this.happy = false})
     : rng = rng ?? Random(),
       board = Board.fromSpec(level.build()) {
     players = [
@@ -35,12 +35,25 @@ class GameState extends ChangeNotifier {
         hand: dealHand(this.rng, wheel: level.wheel, size: level.handSize),
       ),
     ];
+    if (happy) {
+      final hand = players[0].hand;
+      for (var i = 0; i < hand.length; i++) {
+        hand[i] = _draw(players[0], [...hand]..removeAt(i));
+      }
+    }
   }
 
   final Level level;
   final GameMode mode;
   final Random rng;
   final Board board;
+
+  /// Happy difficulty: the player always wins. A computer card that does not
+  /// score stays neutral, and a computer move that would take a card from
+  /// the player or bring the computer level with them scores nothing (see
+  /// [holdsBack]). So the computer total only grows while it stays behind.
+  /// The human player is dealt cards that score (see `goodCard`).
+  final bool happy;
   late final List<PlayerState> players;
 
   int current = 0;
@@ -73,6 +86,21 @@ class GameState extends ChangeNotifier {
     return a > b ? 0 : 1;
   }
 
+  /// A new card for [player]: on happy the human gets one that scores.
+  WheelColor _draw(PlayerState player, List<WheelColor> rest) =>
+      happy && !player.isComputer
+      ? goodCard(board, rest, rng, wheel: level.wheel)
+      : drawCard(rest, rng, wheel: level.wheel);
+
+  /// Whether the happy computer, about to make [r], gives up its points.
+  bool holdsBack(MoveResult r) {
+    if (!happy || !currentPlayer.isComputer || !r.secures) return false;
+    final me = current, opp = 1 - current;
+    if (r.claimed.any((n) => n.owner == opp)) return true;
+    final gain = r.points + r.claimed.where((n) => n.owner != me).length;
+    return total(me) + gain >= total(opp);
+  }
+
   /// Places card [handIndex] of the current player on [node], scores it,
   /// claims and secures every involved field nobody has secured yet,
   /// refills the hand and passes the turn.
@@ -82,12 +110,14 @@ class GameState extends ChangeNotifier {
     final player = currentPlayer;
     final color = player.hand[handIndex];
 
-    final result = evaluateMove(node, color, wheel: level.wheel);
+    var result = evaluateMove(node, color, wheel: level.wheel);
+    if (holdsBack(result)) result = MoveResult(node, color, const []);
     node.color = color;
     for (final n in result.claimed) {
       n.owner = current;
       if (result.secures) n.secured = true;
     }
+    if (happy && player.isComputer && !result.secures) node.owner = null;
     for (final e in result.events) {
       if (e.kind == ScoreKind.fullWheel) {
         for (var i = 0; i + 1 < e.nodes.length; i++) {
@@ -98,7 +128,7 @@ class GameState extends ChangeNotifier {
     }
     player.points += result.points;
     final rest = [...player.hand]..removeAt(handIndex);
-    player.hand[handIndex] = drawCard(rest, rng, wheel: level.wheel);
+    player.hand[handIndex] = _draw(player, rest);
     lastMove = result;
     if (!isOver) current = 1 - current;
     notifyListeners();

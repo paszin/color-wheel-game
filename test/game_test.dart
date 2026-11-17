@@ -262,4 +262,108 @@ void main() {
     }
     expect(hardWins, greaterThan(games * 0.6));
   });
+
+  test('happy: the player wins every game, however they play', () {
+    // Player strategies: avoid scoring, play at random, play well.
+    AiMove careless(GameState s, Random rng) {
+      final hand = s.currentPlayer.hand;
+      for (final node in s.board.empty) {
+        for (var i = 0; i < hand.length; i++) {
+          final r = evaluateMove(node, hand[i], wheel: s.level.wheel);
+          if (!r.secures) return AiMove(i, node);
+        }
+      }
+      return AiMove(0, s.board.empty.first);
+    }
+
+    AiMove random(GameState s, Random rng) {
+      final empty = s.board.empty.toList();
+      return AiMove(
+        rng.nextInt(s.currentPlayer.hand.length),
+        empty[rng.nextInt(empty.length)],
+      );
+    }
+
+    AiMove strong(GameState s, Random rng) => chooseAiMove(s, 0.95, rng);
+
+    var computerScored = 0;
+    var games = 0;
+    for (final level in levels) {
+      for (final player in [careless, random, strong]) {
+        for (var g = 0; g < 4; g++) {
+          final rng = Random(900 + level.number * 10 + g);
+          final state = GameState(
+            level,
+            GameMode.vsComputer,
+            rng: rng,
+            happy: true,
+          );
+          if (g.isOdd) state.secondPlayerStarts();
+          while (!state.isOver) {
+            final move = state.currentPlayer.isComputer
+                ? chooseHappyMove(state, rng)
+                : player(state, rng);
+            state.play(move.handIndex, move.node);
+          }
+          games++;
+          expect(state.winner, 0, reason: '${level.name}, game $g');
+          if (state.players[1].points > 0) computerScored++;
+        }
+      }
+    }
+    // It is a real opponent that scores, just never enough to win.
+    expect(computerScored, greaterThan(games ~/ 3));
+  });
+
+  test('happy: the computer never takes a card from the player', () {
+    final level = levels[2];
+    final rng = Random(77);
+    final state = GameState(level, GameMode.vsComputer, rng: rng, happy: true);
+    while (!state.isOver) {
+      if (state.currentPlayer.isComputer) {
+        final before = state.ownedFields(0);
+        final move = chooseHappyMove(state, rng);
+        state.play(move.handIndex, move.node);
+        expect(state.ownedFields(0), before);
+      } else {
+        final move = chooseAiMove(state, 0.95, rng);
+        state.play(move.handIndex, move.node);
+      }
+    }
+  });
+
+  test('happy: the player always holds a card that scores', () {
+    for (final level in levels) {
+      for (var g = 0; g < 3; g++) {
+        final rng = Random(1300 + level.number * 10 + g);
+        final state = GameState(
+          level,
+          GameMode.vsComputer,
+          rng: rng,
+          happy: true,
+        );
+        while (!state.isOver) {
+          if (state.currentPlayer.isComputer) {
+            final move = chooseHappyMove(state, rng);
+            state.play(move.handIndex, move.node);
+            continue;
+          }
+          bool canScore(Iterable<WheelColor> colours) => state.board.empty.any(
+            (n) => colours.any(
+              (c) => evaluateMove(n, c, wheel: level.wheel).secures,
+            ),
+          );
+          if (canScore(level.wheel.colors)) {
+            expect(
+              canScore(state.currentPlayer.hand),
+              isTrue,
+              reason: '${level.name}, game $g',
+            );
+          }
+          final move = chooseAiMove(state, 0.6, rng);
+          state.play(move.handIndex, move.node);
+        }
+      }
+    }
+  });
 }
