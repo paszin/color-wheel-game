@@ -1,11 +1,11 @@
 {
-    "name": "color_wheel_game",
-    "short_name": "color_wheel_game",
+    "name": "Farbkreis Spiel",
+    "short_name": "Farbkreis Spiel",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F5EFE3",
     "theme_color": "#F5EFE3",
-    "description": "A new Flutter project.",
+    "description": "Farben auf dem Farbkreis legen und punkten.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
