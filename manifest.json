@@ -1,0 +1,35 @@
+{
+    "name": "Farbkreis Spiel",
+    "short_name": "Farbkreis Spiel",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#F5EFE3",
+    "theme_color": "#F5EFE3",
+    "description": "Farben auf dem Farbkreis legen und punkten.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/wheel-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/wheel-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/wheel-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/wheel-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
