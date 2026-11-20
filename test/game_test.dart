@@ -56,7 +56,7 @@ void main() {
         .reduce(max);
     for (final l in big) {
       expect(l.wheel, ColorWheel.extended);
-      expect(l.handSize, 4);
+      expect(l.handSize, l.number == 9 ? 4 : 5);
       expect(l.build().positions.length, greaterThan(largestClassic));
     }
   });

@@ -122,7 +122,7 @@ final levels = <Level>[
     subtitle: 'Große Waben voller Zwischentöne',
     aiSkill: 0.93,
     wheel: ColorWheel.extended,
-    handSize: 4,
+    handSize: 5,
     build: () => hexagon(3, preset: {3: _am, 15: _b, 21: _co, 33: _in}),
   ),
   Level(
@@ -131,7 +131,7 @@ final levels = <Level>[
     subtitle: 'Das große Finale',
     aiSkill: 0.96,
     wheel: ColorWheel.extended,
-    handSize: 4,
+    handSize: 5,
     build: () => staggered(
       6,
       9,

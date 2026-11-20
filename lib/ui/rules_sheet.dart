@@ -56,7 +56,7 @@ class _RulesSheet extends StatelessWidget {
                     Text(
                       'Ihr legt abwechselnd eine Farbkarte aus eurer Hand auf '
                       'ein freies Feld. Danach wird die Hand wieder auf drei '
-                      'Karten aufgefüllt (ab Level 9 auf vier). Punkte gibt es, wenn die neue Karte '
+                      'Karten aufgefüllt (ab Level 9 auf vier, ab Level 10 auf fünf). Punkte gibt es, wenn die neue Karte '
                       'zu ihren Nachbarn passt – entlang der Bleistiftlinien.',
                       style: AppText.body(15),
                     ),
@@ -151,7 +151,7 @@ class _RulesSheet extends StatelessWidget {
                       'und Rot), Magenta (Rot und Violett), Indigo (Violett '
                       'und Blau), Türkis (Blau und Grün) und Limette (Grün '
                       'und Gelb). Der Farbkreis hat dann zwölf Farben, und '
-                      'jeder hält vier Karten. Eine Farbfolge geht in '
+                      'jeder hält vier Karten, ab Level 10 fünf. Eine Farbfolge geht in '
                       'Schritten zum nächsten Ton, also Gelb → Bernstein → '
                       'Orange. Komplementär ist '
                       'weiterhin die gegenüberliegende Farbe. Ein voller '

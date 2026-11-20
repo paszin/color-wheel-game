@@ -515,10 +515,18 @@ class HandRow extends StatelessWidget {
           for (var i = 0; i < hand.length; i++)
             Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: hand.length > 3 ? 5 : 8,
+                horizontal: switch (hand.length) {
+                  <= 3 => 8,
+                  4 => 5,
+                  _ => 3,
+                },
               ),
               child: _HandCard(
-                compact: hand.length > 3,
+                width: switch (hand.length) {
+                  <= 3 => 88,
+                  4 => 76,
+                  _ => 64,
+                },
                 key: ValueKey('slot$i'),
                 color: hand[i],
                 seed: i * 17 + hand[i].index,
@@ -545,11 +553,11 @@ class _HandCard extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onTap,
-    this.compact = false,
+    this.width = 88,
   });
 
-  /// Narrower card so four fit next to each other on a phone.
-  final bool compact;
+  /// Narrower cards so four or five fit next to each other on a phone.
+  final double width;
   final WheelColor color;
   final int seed;
   final double tilt;
@@ -579,7 +587,7 @@ class _HandCard extends StatelessWidget {
                 angle: selected ? 0 : tilt,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
-                  width: compact ? 76 : 88,
+                  width: width,
                   height: 118,
                   decoration: BoxDecoration(
                     color: Inks.paper,
@@ -615,7 +623,7 @@ class _HandCard extends StatelessWidget {
                         child: PaintedDisc(
                           key: ValueKey(color),
                           color: color,
-                          size: compact ? 58 : 66,
+                          size: width - 22,
                           seed: seed,
                         ),
                       ),
